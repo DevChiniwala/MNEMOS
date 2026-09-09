@@ -65,7 +65,15 @@ class DirectoryLoader(BaseLoader):
 
 
 class URLLoader(BaseLoader):
-    def __init__(self, url: str, headers: Optional[Dict[str, str]] = None, timeout: int = 20) -> None:
+    def __init__(self, url: str, headers: Optional[Dict[str, str]] = None, timeout: int = 20, allow_http: bool = False) -> None:
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        if parsed.scheme not in ("https", "http"):
+            raise ValueError(f"URLLoader only supports http(s) URLs, got: {parsed.scheme!r}")
+        if parsed.scheme == "http" and not allow_http:
+            raise ValueError(
+                f"URLLoader requires HTTPS by default. Pass allow_http=True to override. URL: {url}"
+            )
         self.url = url
         self.headers = headers or {}
         self.timeout = timeout

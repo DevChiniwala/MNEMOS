@@ -10,7 +10,11 @@ try:
 except ImportError:
     GraphDatabase = None  # type: ignore
 
+import re
+
 from mnemos.graph.ontology import GraphOntology
+
+_SAFE_REL_RE = re.compile(r'^[A-Z][A-Z0-9_]{0,63}$')
 
 
 class GraphMemoryStore:
@@ -109,6 +113,9 @@ class GraphMemoryStore:
         if not src_id or not dst_id:
             return
         rtype = rel_type.replace(" ", "_").upper()
+        if not _SAFE_REL_RE.match(rtype):
+            print(f"[WARN] Rejected unsafe relation type: {rel_type!r}")
+            return
         query = f"""
         MATCH (a:Memory {{id: $src}})
         MATCH (b:Memory {{id: $dst}})

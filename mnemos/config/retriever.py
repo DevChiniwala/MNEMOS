@@ -10,7 +10,7 @@ class DenseRetrieverConfig:
     model_class: str = "encoder-only-base"
     normalize_embeddings: bool = True
     pooling_method: str = "cls"
-    trust_remote_code: bool = True
+    trust_remote_code: bool = False
     query_instruction_for_retrieval: Optional[str] = None
     use_fp16: bool = False
     devices: List[str] = field(default_factory=lambda: ["cuda:0"])

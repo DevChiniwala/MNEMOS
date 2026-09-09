@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
   <title id="title">Graph Semantics and CRUD Surface</title>
-  <desc id="desc">Detailed view of JITMind graph node types, relation semantics, CRUD methods, and personalized pagerank retrieval path.</desc>
+  <desc id="desc">Detailed view of Mnemos graph node types, relation semantics, CRUD methods, and personalized pagerank retrieval path.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#F8FCFF"/>
@@ -104,7 +104,7 @@
 
   <rect class="panel-b" x="260" y="640" width="1080" height="170" rx="16" fill="#F8FBFF" stroke="#C8D8F2"/>
   <text x="292" y="674" class="h">Graph Layer Guarantee</text>
-  <text x="292" y="698" class="p">JITMIND graph memory is not just storage; it is a semantic runtime surface with temporal correctness, explicit provenance, controlled traversal costs, and operational CRUD boundaries.</text>
+  <text x="292" y="698" class="p">Mnemos graph memory is not just storage; it is a semantic runtime surface with temporal correctness, explicit provenance, controlled traversal costs, and operational CRUD boundaries.</text>
   <text x="292" y="721" class="p">This design keeps graph answers explainable, maintains lifecycle consistency with memory store state, and improves associative retrieval robustness in production workloads.</text>
   <text x="292" y="744" class="p">Combined with temporal filtering and self-editing writes, the graph remains useful instead of accumulating contradictory dead facts.</text>
 

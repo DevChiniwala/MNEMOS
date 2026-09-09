@@ -31,7 +31,7 @@
   <rect class="scan" x="-260" y="156" width="220" height="5" rx="3" fill="url(#flow)"/>
 
   <text x="70" y="95" class="title">Hybrid Retrieval and Ranking Pipeline</text>
-  <text x="70" y="128" class="sub">JITMind combines complementary retrieval channels and resolves ranking with fusion + reranking.</text>
+  <text x="70" y="128" class="sub">Mnemos combines complementary retrieval channels and resolves ranking with fusion + reranking.</text>
 
   <rect class="panel-a" x="70" y="190" width="250" height="170" rx="16" fill="#F5FAFF" stroke="#BFD0EE"/>
   <text x="94" y="224" class="h">Query Prep</text>

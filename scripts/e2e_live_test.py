@@ -294,7 +294,7 @@ async def main() -> int:
     docs = [
         Document(
             content=(
-                "User profile facts: My name is Divyam. I prefer concise, direct answers. "
+                "User profile facts: My name is Dev. I prefer concise, direct answers. "
                 "I like coffee."
             ),
             source="e2e:profile",

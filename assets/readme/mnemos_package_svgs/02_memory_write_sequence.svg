@@ -105,7 +105,7 @@
   <text x="292" y="674" class="h">Write-Path Guarantees</text>
   <text x="292" y="698" class="p">1) every accepted write creates traceable provenance (page + memory + graph edges), 2) updates preserve lineage, 3) stale contradictions are actively demoted from active state.</text>
   <text x="292" y="721" class="p">Bi-temporal fields provide historical auditability while retrieval-time filters preserve present-time correctness for agent responses.</text>
-  <text x="292" y="744" class="p">This is the core reason JITMIND avoids append-only memory rot in long-running production conversations.</text>
+  <text x="292" y="744" class="p">This is the core reason Mnemos avoids append-only memory rot in long-running production conversations.</text>
 
   <rect x="292" y="763" width="220" height="34" rx="10" fill="#E8F6F5" stroke="#0EA5A0"/>
   <text x="314" y="785" class="chip">provenance-complete writes</text>

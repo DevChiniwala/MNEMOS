@@ -86,7 +86,7 @@ class DenseRetriever(AbsRetriever):
                     model_class=config.get("model_class", None),
                     normalize_embeddings=config.get("normalize_embeddings", True),
                     pooling_method=config.get("pooling_method", "cls"),
-                    trust_remote_code=config.get("trust_remote_code", True),
+                    trust_remote_code=config.get("trust_remote_code", False),
                     query_instruction_for_retrieval=config.get("query_instruction_for_retrieval"),
                     use_fp16=config.get("use_fp16", False),
                     devices=devices
@@ -206,10 +206,7 @@ class DenseRetriever(AbsRetriever):
         # Handle possible None values
         texts = []
         for p in pages:
-            header = p.header if p.header is not None else ""
-            content = p.content if p.content is not None else ""
-            text = (header + " " + content).strip()
-            text = p.content
+            text = p.content if p.content is not None else ""
             texts.append(text)
         
         if self.use_api:

@@ -32,12 +32,6 @@ class VLLMGenerator(AbsGenerator):
         self.timeout = config.get("timeout", 60.0)
         self.use_schema = config.get("use_schema", False)
 
-        # Optional environment compatibility for OpenAI SDK
-        if self.api_key is not None:
-            os.environ["OPENAI_API_KEY"] = self.api_key
-        if self.base_url is not None:
-            os.environ["OPENAI_BASE_URL"] = self.base_url
-
         self._client = OpenAI(api_key=self.api_key, base_url=self.base_url.rstrip("/"))
         # Some OpenAI SDK versions support with_options
         self._cclient = (

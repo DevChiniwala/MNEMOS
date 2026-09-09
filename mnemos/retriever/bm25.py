@@ -34,9 +34,11 @@ def _safe_rmtree(path: str, max_retries: int = 3, delay: float = 0.5) -> None:
             if attempt == max_retries - 1:
                 # Final attempt failed, try force delete
                 try:
-                    # Aggressive removal
-                    import subprocess
-                    subprocess.run(['rm', '-rf', path], check=False, capture_output=True)
+                    import stat
+                    def _on_rm_error(func, fpath, exc_info):
+                        os.chmod(fpath, stat.S_IWRITE)
+                        func(fpath)
+                    shutil.rmtree(path, onerror=_on_rm_error)
                     if not os.path.exists(path):
                         return
                 except Exception:
@@ -94,8 +96,6 @@ class BM25Retriever(AbsRetriever):
         docs_path = os.path.join(self._docs_dir(), "documents.jsonl")
         with open(docs_path, "w", encoding="utf-8") as f:
             for i, p in enumerate(pages):
-                text = (p.header + " " + p.content).strip()
-                text = '\n'.join(p.content.split('\n')[1:])
                 text = p.content
                 json.dump({"id": str(i), "contents": text}, f, ensure_ascii=False)
                 f.write("\n")

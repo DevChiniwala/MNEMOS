@@ -33,7 +33,7 @@
 
   <rect class="panel" x="90" y="180" width="280" height="170" rx="14" fill="#F5FAFF" stroke="#BFD0EE"/>
   <text x="114" y="214" class="h">1) CLI Entry</text>
-  <text x="114" y="238" class="p">jitmind-eval &lt;task&gt; [args]</text>
+  <text x="114" y="238" class="p">mnemos-eval &lt;task&gt; [args]</text>
   <text x="114" y="260" class="p">or: python3 eval/run.py ...</text>
   <text x="114" y="282" class="p">validates task id</text>
   <text x="114" y="304" class="p">prints help on invalid input</text>

@@ -1098,9 +1098,9 @@ class ResearchAgent:
             resp = self.generator.generate_single(prompt=prompt, schema=SELF_RAG_SCHEMA)
             data = resp.get("json")
             if not data:
-                import json
+                from mnemos.utils.json_utils import extract_json_object
                 text = resp.get("text", "")
-                data = json.loads(text[text.find("{"): text.rfind("}") + 1])
+                data = extract_json_object(text) or {}
             return {
                 "ISREL": bool(data.get("ISREL", False)),
                 "ISSUP": bool(data.get("ISSUP", False)),

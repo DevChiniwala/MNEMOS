@@ -17,8 +17,8 @@ class UserProfileAgent:
         try:
             response = self.generator.generate_single(prompt=prompt)
             text = response.get("text", "")
-            import json
-            data = json.loads(text[text.find("{"): text.rfind("}") + 1]) if "{" in text else {}
+            from mnemos.utils.json_utils import extract_json_object
+            data = extract_json_object(text) or {}
         except Exception:
             data = {}
 

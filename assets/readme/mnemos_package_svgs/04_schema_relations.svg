@@ -39,7 +39,7 @@
   <rect x="30" y="30" width="1540" height="840" rx="24" fill="#FFFFFF" stroke="#DDE7F7"/>
   <rect class="scan" x="-260" y="156" width="220" height="5" rx="3" fill="url(#flow)"/>
 
-  <text x="70" y="95" class="title">jitmind Schema Relations (Contract-Level View)</text>
+  <text x="70" y="95" class="title">Mnemos Schema Relations (Contract-Level View)</text>
   <text x="70" y="128" class="sub">How write artifacts, retrieval artifacts, and runtime state objects connect across the system.</text>
 
   <rect class="panel-a" x="80" y="170" width="280" height="220" rx="16" fill="#ECFDFA" stroke="#0EA5A0"/>

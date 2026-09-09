@@ -167,7 +167,7 @@ async def main() -> int:
 
     # Ingest a slightly larger synthetic corpus.
     docs = [
-        Document(content="Divyam prefers concise answers and loves coffee.", source="stress:profile", doc_id=f"p-{run_id}"),
+        Document(content="Dev prefers concise answers and loves coffee.", source="stress:profile", doc_id=f"p-{run_id}"),
         Document(content="Alice works at Acme Corp in New York.", source="stress:graph", doc_id=f"g1-{run_id}"),
         Document(content="Acme Corp has products: AlphaWidget and BetaWidget.", source="stress:graph", doc_id=f"g2-{run_id}"),
         Document(content="On 2020-01-01, CEO of Acme Corp became Alice.", source="stress:temp", doc_id=f"t1-{run_id}"),
@@ -241,7 +241,7 @@ async def main() -> int:
         "List Acme Corp products.",
         "Where does Bob live?",
         "Summarize what we know about Acme Corp.",
-        "What does Divyam prefer?",
+        "What does Dev prefer?",
     ]
 
     log("Running async research calls concurrently...")

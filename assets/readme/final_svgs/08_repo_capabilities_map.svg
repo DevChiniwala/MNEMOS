@@ -34,7 +34,7 @@
   <text x="70" y="128" class="sub">How source packages, scripts, examples, evaluations, and tests fit together operationally.</text>
 
   <rect class="panel-a" x="70" y="180" width="420" height="300" rx="16" fill="#ECFDFA" stroke="#0EA5A0"/>
-  <text x="95" y="214" class="h">jitmind/ (core package)</text>
+  <text x="95" y="214" class="h">mnemos/ (core package)</text>
   <text x="95" y="238" class="p">• agents: MemoryAgent + ResearchAgent orchestration</text>
   <text x="95" y="260" class="p">• schemas: memory/page/search/result protocols</text>
   <text x="95" y="282" class="p">• retriever: sparse/dense/index/graph adapters</text>
@@ -88,7 +88,7 @@
 
   <rect class="panel-b" x="95" y="680" width="250" height="100" rx="12" fill="#E8F6F5" stroke="#0EA5A0"/>
   <text x="118" y="712" class="h">Primary Entry</text>
-  <text x="118" y="734" class="p">jitmind/__init__.py</text>
+  <text x="118" y="734" class="p">mnemos/__init__.py</text>
   <text x="118" y="756" class="p">public API exports</text>
 
   <rect class="panel-c" x="375" y="680" width="300" height="100" rx="12" fill="#FFF1DA" stroke="#F59E0B"/>

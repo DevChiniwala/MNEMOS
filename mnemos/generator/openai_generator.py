@@ -29,11 +29,6 @@ class OpenAIGenerator(AbsGenerator):
         self.timeout = config.get("timeout", 60.0)
         self.use_schema = config.get("use_schema", False)
 
-        if self.api_key is not None:
-            os.environ["OPENAI_API_KEY"] = self.api_key
-        if self.base_url is not None:
-            os.environ["OPENAI_BASE_URL"] = self.base_url
-
 
     def generate_single(
         self,
@@ -104,7 +99,8 @@ class OpenAIGenerator(AbsGenerator):
 
         if schema is not None:
             try:
-                out["json"] = json.loads(text[text.find('{'): text.rfind('}') + 1])
+                from mnemos.utils.json_utils import extract_json_object
+                out["json"] = extract_json_object(text)
             except Exception:
                 out["json"] = None
         return out

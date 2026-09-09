@@ -290,34 +290,34 @@ class AdvancedMemoryStore:
         with self._lock:
             with self._persistence_lock():
                 self._refresh_from_disk()
-            removed = 0
-            now = datetime.now(timezone.utc)
-            for e in self._state.entries:
-                if e.status != "active":
-                    continue
-                t_invalid = self._parse_ts(e.t_invalid)
-                if t_invalid and t_invalid <= now:
-                    e.status = "expired"
-                    e.t_expired = self._now_iso()
-                    removed += 1
-                    continue
-                if self._apply_ttl(e):
-                    e.status = "expired"
-                    e.t_expired = self._now_iso()
-                    removed += 1
-                    continue
-                if self._retention(e) < self._retention_threshold:
-                    e.status = "expired"
-                    e.t_expired = self._now_iso()
-                    removed += 1
+                removed = 0
+                now = datetime.now(timezone.utc)
+                for e in self._state.entries:
+                    if e.status != "active":
+                        continue
+                    t_invalid = self._parse_ts(e.t_invalid)
+                    if t_invalid and t_invalid <= now:
+                        e.status = "expired"
+                        e.t_expired = self._now_iso()
+                        removed += 1
+                        continue
+                    if self._apply_ttl(e):
+                        e.status = "expired"
+                        e.t_expired = self._now_iso()
+                        removed += 1
+                        continue
+                    if self._retention(e) < self._retention_threshold:
+                        e.status = "expired"
+                        e.t_expired = self._now_iso()
+                        removed += 1
 
-            if not self._retain_history:
-                self._state.entries = [
-                    e for e in self._state.entries if e.status == "active"
-                ]
+                if not self._retain_history:
+                    self._state.entries = [
+                        e for e in self._state.entries if e.status == "active"
+                    ]
 
-            if removed and self._dir_path:
-                self._save_to_disk()
+                if removed and self._dir_path:
+                    self._save_to_disk()
             return removed
 
     def _coerce_datetime(self, value: str | datetime, *, field_name: str) -> datetime:

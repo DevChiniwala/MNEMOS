@@ -28,7 +28,7 @@
   <rect class="scan" x="-280" y="156" width="230" height="5" rx="3" fill="url(#active)"/>
 
   <text x="70" y="95" class="title">Bi-temporal Validity and Filtering Logic</text>
-  <text x="70" y="128" class="sub">JITMind keeps historical truth for audit while filtering stale facts from active reasoning context.</text>
+  <text x="70" y="128" class="sub">Mnemos keeps historical truth for audit while filtering stale facts from active reasoning context.</text>
 
   <rect class="panel-a" x="70" y="180" width="1460" height="280" rx="18" fill="#F8FBFF" stroke="#C8D8F2"/>
   <text x="96" y="216" class="h">Temporal Axis: Fact Lifecycle</text>
