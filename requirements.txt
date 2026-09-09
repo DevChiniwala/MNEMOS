@@ -1,0 +1,7 @@
+# Compatibility entrypoint. pyproject.toml is the single dependency authority.
+-e .
+
+# Add capabilities explicitly, for example:
+#   pip install -e ".[graph,cohere]"
+#   pip install -e ".[local-dense,summarization]"
+#   pip install -e ".[eval,dev]"

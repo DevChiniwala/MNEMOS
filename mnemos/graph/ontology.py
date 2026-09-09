@@ -1,62 +1,42 @@
-# -*- coding: utf-8 -*-
-"""Graph ontology for Mnemos knowledge graph.
-
-Defines node types and relation types that structure the graph layer.
-"""
-
 from __future__ import annotations
 
-from enum import Enum
-from typing import Dict, List, Optional, Set
-
-from pydantic import BaseModel, Field
+from dataclasses import dataclass, field
+from typing import Iterable, Set
 
 
-class RelationType(str, Enum):
-    MENTIONS = "MENTIONS"
-    RELATES_TO = "RELATES_TO"
-    DERIVED_FROM = "DERIVED_FROM"
-    SUPERSEDES = "SUPERSEDES"
-    UPDATES = "UPDATES"
-    EXTENDS = "EXTENDS"
-    WORKS_AT = "WORKS_AT"
-    LOCATED_IN = "LOCATED_IN"
-    PART_OF = "PART_OF"
-    HAS_ROLE = "HAS_ROLE"
+@dataclass
+class GraphOntology:
+    entity_types: Set[str] = field(default_factory=set)
+    relation_types: Set[str] = field(default_factory=set)
+    allow_unknown: bool = True
+    default_entity_type: str = "Entity"
+    default_relation_type: str = "RELATED_TO"
 
+    def normalize_entity_type(self, etype: str | None) -> str:
+        t = (etype or self.default_entity_type).strip()
+        if not t:
+            t = self.default_entity_type
+        if self.entity_types and t not in self.entity_types:
+            return t if self.allow_unknown else self.default_entity_type
+        return t
 
-class NodeType(str, Enum):
-    MEMORY = "Memory"
-    ENTITY = "Entity"
-    EPISODE = "Episode"
-    SEMANTIC = "Semantic"
-    COMMUNITY = "Community"
-    SOURCE = "Source"
+    def normalize_relation_type(self, rel: str | None) -> str:
+        r = (rel or self.default_relation_type).strip().replace(" ", "_").upper()
+        if not r:
+            r = self.default_relation_type
+        if self.relation_types and r not in self.relation_types:
+            return r if self.allow_unknown else self.default_relation_type
+        return r
 
-
-class GraphOntology(BaseModel):
-    """Schema for the Mnemos knowledge graph.
-
-    Defines which node types and relation types are recognized,
-    and configurable constraints.
-    """
-
-    node_types: Set[str] = Field(
-        default_factory=lambda: {t.value for t in NodeType}
-    )
-    relation_types: Set[str] = Field(
-        default_factory=lambda: {r.value for r in RelationType}
-    )
-    entity_types: Set[str] = Field(
-        default_factory=lambda: {
-            "person", "organization", "location", "concept",
-            "event", "product", "technology",
-        }
-    )
-    max_traversal_depth: int = 3
-
-    def is_valid_relation(self, rel: str) -> bool:
-        return rel.upper() in self.relation_types
-
-    def is_valid_entity_type(self, etype: str) -> bool:
-        return etype.lower() in self.entity_types
+    @classmethod
+    def from_lists(
+        cls,
+        entity_types: Iterable[str] | None = None,
+        relation_types: Iterable[str] | None = None,
+        allow_unknown: bool = True,
+    ) -> "GraphOntology":
+        return cls(
+            entity_types=set(e for e in (entity_types or []) if e),
+            relation_types=set(r for r in (relation_types or []) if r),
+            allow_unknown=allow_unknown,
+        )

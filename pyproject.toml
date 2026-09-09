@@ -1,43 +1,100 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "mnemos"
 version = "0.1.0"
-description = "Temporal Memory Infrastructure for Autonomous AI"
+description = "Just-in-time memory system for AI agents with self-editing bi-temporal memory and temporal graph reasoning."
 readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
 authors = [
-  { name = "Dev Chiniwala" },
+    {name = "Dev Chiniwala"},
 ]
-license = { text = "MIT" }
-requires-python = ">=3.9"
+keywords = ["ai", "memory", "agent", "llm", "nlp"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
 dependencies = [
-    "pydantic>=2.0",
-    "openai>=1.0",
+    "numpy>=1.23.0",
+    "openai>=1.0.0",
+    "pydantic>=2.0.0",
+    "requests>=2.28.0",
+    "tiktoken>=0.7.0",
+    "tqdm>=4.65.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
-    "mypy>=1.0",
-    "ruff>=0.1",
+    "ruff>=0.6.0",
 ]
-graph = [
-    "neo4j>=5.0",
+eval = [
+    "datasets>=2.18.0",
+    "pandas>=2.0.0",
+    "ragas>=0.1.0",
+]
+graph = ["neo4j>=5.20.0"]
+cohere = ["cohere>=5.6.0", "faiss-cpu>=1.7.4"]
+local-dense = ["FlagEmbedding>=1.2.0", "faiss-cpu>=1.7.4", "torch>=2.0.0"]
+summarization = ["cohere>=5.6.0", "scikit-learn>=1.2.0"]
+ingestion = ["beautifulsoup4>=4.12.0", "boto3>=1.28.0"]
+local-llm = ["vllm>=0.6.0", "torch>=2.0.0", "transformers>=4.30.0"]
+lucene = ["pyserini>=0.22.0"]
+all = [
+    "beautifulsoup4>=4.12.0",
+    "boto3>=1.28.0",
+    "cohere>=5.6.0",
+    "faiss-cpu>=1.7.4",
+    "FlagEmbedding>=1.2.0",
+    "neo4j>=5.20.0",
+    "scikit-learn>=1.2.0",
+    "torch>=2.0.0",
 ]
 
-[tool.hatch.build.targets.wheel]
-packages = ["mnemos"]
+[project.scripts]
+mnemos-eval = "mnemos.evaluation.cli:main"
 
-[tool.ruff]
-line-length = 100
-target-version = "py39"
+[project.urls]
+Homepage = "https://github.com/DevChiniwala/MNEMOS"
+Repository = "https://github.com/DevChiniwala/MNEMOS"
+Issues = "https://github.com/DevChiniwala/MNEMOS/issues"
 
-[tool.ruff.lint]
-select = ["E", "F", "I", "UP", "N", "C", "B"]
-ignore = ["B008"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mnemos*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
 
 [tool.mypy]
-strict = true
-ignore_missing_imports = true
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true

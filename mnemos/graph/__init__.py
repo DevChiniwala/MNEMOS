@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Mnemos graph — optional graph backend for entity/relation storage."""
+try:
+    from .graph_store import GraphMemoryStore
+except ImportError:
+    GraphMemoryStore = None  # type: ignore
+from .ontology import GraphOntology
+from .utils import load_ontology_from_env
 
-from mnemos.graph.store import InMemoryGraphStore
-from mnemos.graph.ontology import GraphOntology, RelationType
-
-__all__ = ["InMemoryGraphStore", "GraphOntology", "RelationType"]
+__all__ = ["GraphMemoryStore", "GraphOntology", "load_ontology_from_env"]
