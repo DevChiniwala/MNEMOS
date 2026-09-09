@@ -66,3 +66,29 @@ async def explain_memory(
         "status": entry.status.value,
         "history": [h.model_dump() for h in history]
     }
+
+from pydantic import BaseModel
+class ErasureResponse(BaseModel):
+    status: str
+    target_user_id: str
+    items_deleted: int
+
+from mnemos.privacy.erasure import ErasureEngine
+
+@router.delete("/users/{user_id}/erase", response_model=ErasureResponse)
+async def erase_user_data(
+    user_id: str,
+    requestor_id: str = "admin", # In a real system, this comes from auth token
+    store: AdvancedMemoryStore = Depends(get_memory_store)
+):
+    try:
+        engine = ErasureEngine(store)
+        deleted = engine.erase_user_data(requestor_id, user_id)
+        return ErasureResponse(
+            status="SUCCESS",
+            target_user_id=user_id,
+            items_deleted=deleted
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
