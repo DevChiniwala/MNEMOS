@@ -17,10 +17,14 @@ The module focuses on providing clear abstraction and extensible interfaces for 
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Tuple
+import logging
 import os
 import json
 import asyncio
 
+logger = logging.getLogger(__name__)
+
+from mnemos.utils.json_utils import extract_json_object
 from mnemos.prompts import (
     Planning_PROMPT,
     Integrate_PROMPT,
@@ -145,7 +149,7 @@ class ResearchAgent:
                     )
                     self.retrievers["graph"] = GraphRetriever({"graph_store": graph_store, "use_ppr": True})
                 except Exception as e:
-                    print(f"[WARN] Failed to init GraphRetriever: {e}")
+                    logger.warning(f" Failed to init GraphRetriever: {e}")
 
         # Build indices upfront (if retrievers are provided)
         for name, r in self.retrievers.items():
@@ -424,11 +428,11 @@ class ResearchAgent:
         # Debug: print prompt length
         prompt_chars = len(prompt)
         estimated_tokens = prompt_chars // 4  # Rough estimate: 1 token â‰ˆ 4 chars
-        print(f"[DEBUG] Planning prompt length: {prompt_chars} chars (~{estimated_tokens} tokens)")
+        logger.debug(f" Planning prompt length: {prompt_chars} chars (~{estimated_tokens} tokens)")
 
         try:
             response = self.generator.generate_single(prompt=prompt, schema=PLANNING_SCHEMA)
-            data = response.get("json") or json.loads(response["text"])
+            data = response.get("json") or extract_json_object(response["text"]) or {}
             return SearchPlan(
                 info_needs=data.get("info_needs", []),
                 tools=data.get("tools", []),
@@ -816,7 +820,7 @@ class ResearchAgent:
                     try:
                         self.memory_store.touch(entry_ids)
                     except Exception as e:
-                        print(f"[WARN] Failed to update memory strength: {e}")
+                        logger.warning(f" Failed to update memory strength: {e}")
 
         evidence_text = []
         sources = []
@@ -841,7 +845,7 @@ class ResearchAgent:
 
         try:
             response = self.generator.generate_single(prompt=prompt, schema=INTEGRATE_SCHEMA)
-            data = response.get("json") or json.loads(response["text"])
+            data = response.get("json") or extract_json_object(response["text"]) or {}
             
             # Process sources: ensure list of strings (convert ints if needed)
             llm_sources = data.get("sources", sources)
@@ -1081,7 +1085,7 @@ class ResearchAgent:
             response = self.generator.generate_single(prompt=prompt)
             return (response.get("text") or "").strip()
         except Exception as e:
-            print(f"[WARN] HyDE generation failed: {e}")
+            logger.warning(f" HyDE generation failed: {e}")
             return ""
 
     def _self_rag_reflect(self, question: str, retrieved: List[str], response: str) -> Optional[Dict[str, bool]]:
@@ -1107,7 +1111,7 @@ class ResearchAgent:
                 "ISUSE": bool(data.get("ISUSE", False)),
             }
         except Exception as e:
-            print(f"[WARN] Self-RAG reflection failed: {e}")
+            logger.warning(f" Self-RAG reflection failed: {e}")
             return None
 
     def _filter_temporal_hits(self, hits: List[Hit]) -> List[Hit]:
@@ -1166,7 +1170,7 @@ class ResearchAgent:
             # Debug: print reflection prompt length
             result_content_chars = len(result.content)
             estimated_result_tokens = result_content_chars // 4
-            print(f"[DEBUG] Reflection result.content length: {result_content_chars} chars (~{estimated_result_tokens} tokens)")
+            logger.debug(f" Reflection result.content length: {result_content_chars} chars (~{estimated_result_tokens} tokens)")
             
             # Step 1: Check for completeness of information
             template_check_prompt = InfoCheck_PROMPT.format(request=request, result=result.content)
@@ -1176,10 +1180,10 @@ class ResearchAgent:
                 check_prompt = template_check_prompt
             check_prompt_chars = len(check_prompt)
             estimated_check_tokens = check_prompt_chars // 4
-            print(f"[DEBUG] Reflection check_prompt length: {check_prompt_chars} chars (~{estimated_check_tokens} tokens)")
+            logger.debug(f" Reflection check_prompt length: {check_prompt_chars} chars (~{estimated_check_tokens} tokens)")
             
             check_response = self.generator.generate_single(prompt=check_prompt, schema=INFO_CHECK_SCHEMA)
-            check_data = check_response.get("json") or json.loads(check_response["text"])
+            check_data = check_response.get("json") or extract_json_object(check_response["text"]) or {}
             
             enough = check_data.get("enough", False)
             
@@ -1198,10 +1202,10 @@ class ResearchAgent:
                 generate_prompt = template_generate_prompt
             generate_prompt_chars = len(generate_prompt)
             estimated_generate_tokens = generate_prompt_chars // 4
-            print(f"[DEBUG] Reflection generate_prompt length: {generate_prompt_chars} chars (~{estimated_generate_tokens} tokens)")
+            logger.debug(f" Reflection generate_prompt length: {generate_prompt_chars} chars (~{estimated_generate_tokens} tokens)")
             
             generate_response = self.generator.generate_single(prompt=generate_prompt, schema=GENERATE_REQUESTS_SCHEMA)
-            generate_data = generate_response.get("json") or json.loads(generate_response["text"])
+            generate_data = generate_response.get("json") or extract_json_object(generate_response["text"]) or {}
             
             # Get the list of requests and convert to string
             new_requests_list = generate_data.get("new_requests", [])

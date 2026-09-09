@@ -29,6 +29,9 @@ class OpenAIGenerator(AbsGenerator):
         self.timeout = config.get("timeout", 60.0)
         self.use_schema = config.get("use_schema", False)
 
+        self._client = OpenAI(api_key=self.api_key, base_url=self.base_url.rstrip("/") if self.base_url else None)
+        self._cclient = self._client.with_options(timeout=self.timeout) if hasattr(self._client, "with_options") else self._client
+
 
     def generate_single(
         self,
@@ -67,9 +70,6 @@ class OpenAIGenerator(AbsGenerator):
                 }
             }
 
-        client = OpenAI(api_key=self.api_key, base_url=self.base_url.rstrip("/") if self.base_url else None)
-        cclient = client.with_options(timeout=self.timeout) if hasattr(client, "with_options") else client
-
         params: Dict[str, Any] = {
             "model": self.model_name,
             "messages": messages,
@@ -84,7 +84,7 @@ class OpenAIGenerator(AbsGenerator):
         retry_cfg = RetryConfig(max_attempts=4, base_delay_s=2.0, max_delay_s=12.0, jitter_s=0.5)
 
         def _call():
-            return cclient.chat.completions.create(**params)
+            return self._cclient.chat.completions.create(**params)
 
         resp = retry_call(_call, config=retry_cfg)
 

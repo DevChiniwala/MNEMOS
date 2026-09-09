@@ -9,8 +9,8 @@ from concurrent.futures import ThreadPoolExecutor
 from multiprocessing import cpu_count
 from tqdm import tqdm
 
-from mnemos.generator.base import AbsGenerator  # base class
-# If you have a dedicated Config dataclass, you can also use from_config like OpenAIGenerator.
+from mnemos.generator.base import AbsGenerator
+from mnemos.utils.retry import RetryConfig, retry_call
 
 class VLLMGenerator(AbsGenerator):
     """
@@ -89,17 +89,12 @@ class VLLMGenerator(AbsGenerator):
         if extra_body:
             params["extra_body"] = {**params.get("extra_body", {}), **extra_body}
 
-        times = 0
-        while True:
-            try:
-                resp = self._cclient.chat.completions.create(**params)
-                break
-            except Exception as e:
-                print(str(e), "times:", times)
-                times += 1
-                if times > 3:  # retry at most 3 times
-                    raise e
-                time.sleep(5)
+        retry_cfg = RetryConfig(max_attempts=4, base_delay_s=2.0, max_delay_s=12.0, jitter_s=0.5)
+
+        def _call():
+            return self._cclient.chat.completions.create(**params)
+
+        resp = retry_call(_call, config=retry_cfg)
 
         text = ""
         try:
@@ -113,7 +108,8 @@ class VLLMGenerator(AbsGenerator):
         if schema is not None:
             # vLLM guided_json tries to ensure valid JSON, but parse defensively.
             try:
-                out["json"] = json.loads(text[text.find('{'): text.rfind('}') + 1])
+                from mnemos.utils.json_utils import extract_json_object
+                out["json"] = extract_json_object(text)
             except Exception:
                 out["json"] = None
         return out

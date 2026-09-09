@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
+import logging
 from typing import Any, Dict, List, Optional
 from contextlib import contextmanager
 import hashlib
@@ -11,6 +12,8 @@ except ImportError:
     GraphDatabase = None  # type: ignore
 
 import re
+
+logger = logging.getLogger(__name__)
 
 from mnemos.graph.ontology import GraphOntology
 
@@ -63,9 +66,9 @@ class GraphMemoryStore:
                     try:
                         session.run(q)
                     except Exception as e:
-                        print(f"[WARN] Failed to create constraint: {e}")
+                        logger.warning(f" Failed to create constraint: {e}")
         except Exception as e:
-            print(f"[WARN] Failed to connect to Neo4j for constraints: {e}")
+            logger.warning(f" Failed to connect to Neo4j for constraints: {e}")
 
     def _now_iso(self) -> str:
         from datetime import datetime, timezone
@@ -79,7 +82,7 @@ class GraphMemoryStore:
                 result = session.run(query, **params)
                 return [dict(r) for r in result]
         except Exception as e:
-            print(f"[WARN] Cypher query failed: {e}")
+            logger.warning(f" Cypher query failed: {e}")
             return []
 
     def upsert_memory(self, memory_id: str, props: Dict[str, Any]) -> None:
@@ -91,7 +94,7 @@ class GraphMemoryStore:
             with self._get_session() as session:
                 session.run(query, id=memory_id, props=props)
         except Exception as e:
-            print(f"[WARN] Failed to upsert memory {memory_id}: {e}")
+            logger.warning(f" Failed to upsert memory {memory_id}: {e}")
 
     def mark_memory_status(self, memory_id: str, status: str) -> None:
         query = "MATCH (m:Memory {id: $id}) SET m.status = $status"
@@ -99,7 +102,7 @@ class GraphMemoryStore:
             with self._get_session() as session:
                 session.run(query, id=memory_id, status=status)
         except Exception as e:
-            print(f"[WARN] Failed to mark memory status {memory_id}: {e}")
+            logger.warning(f" Failed to mark memory status {memory_id}: {e}")
 
     def mark_memory_latest(self, memory_id: str, is_latest: bool) -> None:
         query = "MATCH (m:Memory {id: $id}) SET m.is_latest = $is_latest"
@@ -107,14 +110,14 @@ class GraphMemoryStore:
             with self._get_session() as session:
                 session.run(query, id=memory_id, is_latest=is_latest)
         except Exception as e:
-            print(f"[WARN] Failed to mark memory latest {memory_id}: {e}")
+            logger.warning(f" Failed to mark memory latest {memory_id}: {e}")
 
     def link_memory_relation(self, src_id: str, dst_id: str, rel_type: str) -> None:
         if not src_id or not dst_id:
             return
         rtype = rel_type.replace(" ", "_").upper()
         if not _SAFE_REL_RE.match(rtype):
-            print(f"[WARN] Rejected unsafe relation type: {rel_type!r}")
+            logger.warning(f" Rejected unsafe relation type: {rel_type!r}")
             return
         query = f"""
         MATCH (a:Memory {{id: $src}})
@@ -126,7 +129,7 @@ class GraphMemoryStore:
             with self._get_session() as session:
                 session.run(query, src=src_id, dst=dst_id, ts=self._now_iso())
         except Exception as e:
-            print(f"[WARN] Failed to link memory relation {src_id}->{dst_id}: {e}")
+            logger.warning(f" Failed to link memory relation {src_id}->{dst_id}: {e}")
 
     def add_entities_relations(
         self,
@@ -167,7 +170,7 @@ class GraphMemoryStore:
                             mid=memory_id,
                         )
                     except Exception as e:
-                        print(f"[WARN] Failed to add entity {name}: {e}")
+                        logger.warning(f" Failed to add entity {name}: {e}")
 
                 for r in relations:
                     head = r.get("head")
@@ -215,9 +218,9 @@ class GraphMemoryStore:
                             t_invalid=t_invalid or r.get("t_invalid"),
                         )
                     except Exception as e:
-                        print(f"[WARN] Failed to add relation {head}->{tail}: {e}")
+                        logger.warning(f" Failed to add relation {head}->{tail}: {e}")
         except Exception as e:
-            print(f"[WARN] Failed to add entities/relations for memory {memory_id}: {e}")
+            logger.warning(f" Failed to add entities/relations for memory {memory_id}: {e}")
 
     # ---- 3-tier graph architecture ----
     def add_episode(
@@ -269,7 +272,7 @@ class GraphMemoryStore:
                         eid=episode_id,
                     )
         except Exception as e:
-            print(f"[WARN] Failed to add episode for memory {memory_id}: {e}")
+            logger.warning(f" Failed to add episode for memory {memory_id}: {e}")
             return None
         return episode_id
 
@@ -350,7 +353,7 @@ class GraphMemoryStore:
                         sid=sid,
                     )
         except Exception as e:
-            print(f"[WARN] Failed to add semantic fact {fact}: {e}")
+            logger.warning(f" Failed to add semantic fact {fact}: {e}")
             return None
         return sid
 
@@ -411,7 +414,7 @@ class GraphMemoryStore:
                         sid=sid,
                     )
         except Exception as e:
-            print(f"[WARN] Failed to add semantic statement: {e}")
+            logger.warning(f" Failed to add semantic statement: {e}")
             return None
         return sid
 
@@ -472,7 +475,7 @@ class GraphMemoryStore:
                         mid=mid,
                     )
         except Exception as e:
-            print(f"[WARN] Failed to add community summary {community_id}: {e}")
+            logger.warning(f" Failed to add community summary {community_id}: {e}")
 
     # ---- Graph CRUD API ----
     def upsert_entity(self, name: str, etype: str = "Entity", props: Optional[Dict[str, Any]] = None) -> None:
@@ -496,7 +499,7 @@ class GraphMemoryStore:
                     props=props,
                 )
         except Exception as e:
-            print(f"[WARN] Failed to upsert entity {name}: {e}")
+            logger.warning(f" Failed to upsert entity {name}: {e}")
 
     def delete_entity(self, name: str, etype: str = "Entity") -> None:
         if not name:
@@ -510,7 +513,7 @@ class GraphMemoryStore:
             with self._get_session() as session:
                 session.run("MATCH (e:Entity {key: $key}) DETACH DELETE e", key=key)
         except Exception as e:
-            print(f"[WARN] Failed to delete entity {name}: {e}")
+            logger.warning(f" Failed to delete entity {name}: {e}")
 
     def upsert_relation(
         self,
@@ -559,7 +562,7 @@ class GraphMemoryStore:
                     props=props,
                 )
         except Exception as e:
-            print(f"[WARN] Failed to upsert relation {head}-{rel_type}-{tail}: {e}")
+            logger.warning(f" Failed to upsert relation {head}-{rel_type}-{tail}: {e}")
 
     def delete_relation(
         self,
@@ -591,7 +594,7 @@ class GraphMemoryStore:
                     rel_type=rel_type,
                 )
         except Exception as e:
-            print(f"[WARN] Failed to delete relation {head}-{rel_type}-{tail}: {e}")
+            logger.warning(f" Failed to delete relation {head}-{rel_type}-{tail}: {e}")
 
     def delete_memory(self, memory_id: str) -> None:
         if not memory_id:
@@ -600,7 +603,7 @@ class GraphMemoryStore:
             with self._get_session() as session:
                 session.run("MATCH (m:Memory {id: $id}) DETACH DELETE m", id=memory_id)
         except Exception as e:
-            print(f"[WARN] Failed to delete memory {memory_id}: {e}")
+            logger.warning(f" Failed to delete memory {memory_id}: {e}")
 
     def delete_episode(self, episode_id: str) -> None:
         if not episode_id:
@@ -609,7 +612,7 @@ class GraphMemoryStore:
             with self._get_session() as session:
                 session.run("MATCH (e:Episode {id: $id}) DETACH DELETE e", id=episode_id)
         except Exception as e:
-            print(f"[WARN] Failed to delete episode {episode_id}: {e}")
+            logger.warning(f" Failed to delete episode {episode_id}: {e}")
 
     def delete_semantic(self, semantic_id: str) -> None:
         if not semantic_id:
@@ -618,7 +621,7 @@ class GraphMemoryStore:
             with self._get_session() as session:
                 session.run("MATCH (s:Semantic {id: $id}) DETACH DELETE s", id=semantic_id)
         except Exception as e:
-            print(f"[WARN] Failed to delete semantic {semantic_id}: {e}")
+            logger.warning(f" Failed to delete semantic {semantic_id}: {e}")
 
     def delete_community(self, community_id: str) -> None:
         if not community_id:
@@ -627,7 +630,7 @@ class GraphMemoryStore:
             with self._get_session() as session:
                 session.run("MATCH (c:Community {id: $id}) DETACH DELETE c", id=community_id)
         except Exception as e:
-            print(f"[WARN] Failed to delete community {community_id}: {e}")
+            logger.warning(f" Failed to delete community {community_id}: {e}")
 
     def query_memories(self, entity_names: List[str], depth: int = 1, limit: int = 20) -> List[Dict[str, Any]]:
         if not entity_names:
@@ -685,7 +688,7 @@ class GraphMemoryStore:
                         "score": 0.5,
                     }
         except Exception as e:
-            print(f"[WARN] Failed to query graph memories: {e}")
+            logger.warning(f" Failed to query graph memories: {e}")
         return list(results.values())
 
     # ---- HippoRAG: Personalized PageRank ----
@@ -736,7 +739,7 @@ class GraphMemoryStore:
                     node_types[t_key] = t_type
                     edges.append((s_key, t_key))
         except Exception as e:
-            print(f"[WARN] Failed to build subgraph for PPR: {e}")
+            logger.warning(f" Failed to build subgraph for PPR: {e}")
             return []
 
         if not edges:
@@ -801,7 +804,7 @@ class GraphMemoryStore:
                     "score": score,
                 })
         except Exception as e:
-            print(f"[WARN] Failed to fetch PPR memories: {e}")
+            logger.warning(f" Failed to fetch PPR memories: {e}")
         return results
 
     def _node_key(self, node) -> tuple[Optional[str], str]:

@@ -1,6 +1,9 @@
 from __future__ import annotations
-import os, json, subprocess, shutil, time
+import logging
+import os, json, shutil, time
 from typing import Dict, Any, List, Optional
+
+logger = logging.getLogger(__name__)
 
 try:
     from pyserini.search.lucene import LuceneSearcher
@@ -126,7 +129,7 @@ class BM25Retriever(AbsRetriever):
                     print(f"  stdout: {e.stdout}")
                     print(f"  stderr: {e.stderr}")
                     raise
-                print(f"[WARN] Pyserini index build failed, retry {attempt + 1}/{max_build_retries}...")
+                logger.warning(f" Pyserini index build failed, retry {attempt + 1}/{max_build_retries}...")
                 # Clean failed index
                 _safe_rmtree(self._lucene_dir())
                 os.makedirs(self._lucene_dir(), exist_ok=True)

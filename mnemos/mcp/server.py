@@ -100,7 +100,7 @@ async def read_resource(uri: str) -> str:
     """Read specific memory resource."""
     if uri == "mnemos://system/stats":
         store = get_memory_store()
-        active = store.get_active_entries()
+        active = store.get_entries(include_inactive=False)
         return json.dumps({
             "total_active_memories": len(active),
             "memories": [m.content for m in active[:10]] # Limit preview

@@ -18,12 +18,15 @@ _research_agent = None
 def init_services():
     global _generator, _memory_agent, _research_agent
     
-    api_key = os.getenv("OPENROUTER_API_KEY", os.getenv("OPENAI_API_KEY", "mock-key"))
-    base_url = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-    
+    api_key = os.getenv("MNEMOS_API_KEY") or os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("No API key configured. Set MNEMOS_API_KEY, OPENROUTER_API_KEY, or OPENAI_API_KEY.")
+    base_url = os.getenv("MNEMOS_BASE_URL") or os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+    model_name = os.getenv("MNEMOS_MODEL", "google/gemini-3-flash-preview")
+
     _generator = OpenAIGenerator.from_config(
         OpenAIGeneratorConfig(
-            model_name="google/gemini-3-flash-preview",
+            model_name=model_name,
             api_key=api_key,
             base_url=base_url,
             temperature=0.0,

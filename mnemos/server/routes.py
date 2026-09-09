@@ -12,17 +12,18 @@ router = APIRouter()
 
 @router.post("/memories", response_model=MemorizeResponse)
 async def memorize_fact(
-    req: MemorizeRequest, 
+    req: MemorizeRequest,
     agent: MemoryAgent = Depends(get_memory_agent)
 ):
     try:
-        # Our memory agent's memorize method
-        result = agent.memorize(req.text, user_id=req.user_id)
-        # We need to map the result
-        # Assuming memorize returns a MemoryEntry or similar.
+        result = agent.memorize(req.text, meta=req.metadata, user_id=req.user_id)
+        memory_id = None
+        if result and result.new_page:
+            memory_id = result.new_page.meta.get("memory_id")
+        op = result.debug.get("operation", "NOOP") if result and result.debug else "NOOP"
         return MemorizeResponse(
-            status="SUCCESS",
-            memory_id=getattr(result, "id", None) if result else None,
+            status=op,
+            memory_id=memory_id,
             message="Fact processed successfully."
         )
     except Exception as e:
@@ -37,7 +38,7 @@ async def research_topic(
         out = agent.research(request=req.question, user_id=req.user_id)
         return ResearchResponse(
             answer=out.integrated_memory,
-            sources=list(out.raw_memory.keys())
+            sources=list(out.raw_memory.keys()) if isinstance(out.raw_memory, dict) else []
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -46,8 +47,7 @@ async def research_topic(
 async def list_memories(
     store: AdvancedMemoryStore = Depends(get_memory_store)
 ):
-    # Returns all active memories
-    active = store.get_active_entries()
+    active = store.get_entries(include_inactive=False)
     return {"memories": [m.model_dump() for m in active]}
 
 @router.get("/memories/{memory_id}")
@@ -55,40 +55,31 @@ async def explain_memory(
     memory_id: str,
     store: AdvancedMemoryStore = Depends(get_memory_store)
 ):
-    entry = store.get_entry(memory_id)
+    entry = store.get_entry_by_id(memory_id)
     if not entry:
         raise HTTPException(status_code=404, detail="Memory not found.")
-    
+
     history = store.get_version_history(memory_id)
     return {
         "memory_id": memory_id,
         "content": entry.content,
-        "status": entry.status.value,
+        "status": entry.status,
         "history": [h.model_dump() for h in history]
     }
 
-from pydantic import BaseModel
-class ErasureResponse(BaseModel):
-    status: str
-    target_user_id: str
-    items_deleted: int
-
-from mnemos.privacy.erasure import ErasureEngine
-
-@router.delete("/users/{user_id}/erase", response_model=ErasureResponse)
+@router.delete("/users/{user_id}/erase")
 async def erase_user_data(
     user_id: str,
-    requestor_id: str = "admin", # In a real system, this comes from auth token
     store: AdvancedMemoryStore = Depends(get_memory_store)
 ):
     try:
+        from mnemos.privacy.erasure import ErasureEngine
         engine = ErasureEngine(store)
-        deleted = engine.erase_user_data(requestor_id, user_id)
-        return ErasureResponse(
-            status="SUCCESS",
-            target_user_id=user_id,
-            items_deleted=deleted
-        )
+        deleted = engine.erase_user_data("admin", user_id)
+        return {
+            "status": "SUCCESS",
+            "target_user_id": user_id,
+            "items_deleted": deleted
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-

@@ -72,6 +72,8 @@ all = [
 
 [project.scripts]
 mnemos-eval = "mnemos.evaluation.cli:main"
+mnemos-server = "mnemos.server.main:run_server"
+mnemos-mcp = "mnemos.mcp:run_mcp_cli"
 
 [project.urls]
 Homepage = "https://github.com/DevChiniwala/MNEMOS"

@@ -14,7 +14,10 @@ This module defines the MemoryAgent for the Mnemos (Mnemos) framework.
 from __future__ import annotations
 
 from typing import Dict, Optional, Tuple, Any
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 
 from mnemos.prompts import MemoryAgent_PROMPT, MemoryOperation_PROMPT, ConflictCheck_PROMPT
 from mnemos.schemas import (
@@ -73,7 +76,7 @@ class MemoryAgent:
                         ontology=ontology,
                     )
                 except Exception as e:
-                    print(f"[WARN] Failed to init GraphMemoryStore: {e}")
+                    logger.warning(f" Failed to init GraphMemoryStore: {e}")
                     self.graph_store = None
             else:
                 self.graph_store = None
@@ -368,7 +371,7 @@ class MemoryAgent:
         try:
             related = self.graph_store.query_memories(names, depth=1, limit=10)
         except Exception as e:
-            print(f"[WARN] Conflict query failed: {e}")
+            logger.warning(f" Conflict query failed: {e}")
             return
 
         for row in related:
@@ -383,7 +386,7 @@ class MemoryAgent:
                     self.memory_store.supersede_entry(mid, t_invalid=new_entry.t_observed)
                     self.graph_store.mark_memory_status(mid, "superseded")
                 except Exception as e:
-                    print(f"[WARN] Failed to supersede conflict {mid}: {e}")
+                    logger.warning(f" Failed to supersede conflict {mid}: {e}")
 
     def _is_contradictory(self, existing_fact: str, new_fact: str) -> bool:
         prompt = ConflictCheck_PROMPT.format(existing_fact=existing_fact, new_fact=new_fact)
