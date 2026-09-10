@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import math
 
 class SpacedRepetitionScheduler:
@@ -56,7 +56,7 @@ class SpacedRepetitionScheduler:
         entry_meta["fsrs_stability"] = result["stability"]
         entry_meta["fsrs_difficulty"] = result["difficulty"]
         
-        next_date = datetime.utcnow() + timedelta(days=result["next_review_days"])
-        entry_meta["fsrs_next_review"] = next_date.isoformat() + "Z"
+        next_date = datetime.now(timezone.utc) + timedelta(days=result["next_review_days"])
+        entry_meta["fsrs_next_review"] = next_date.isoformat()
         
         return entry_meta

@@ -38,7 +38,7 @@ class MemoryConsolidator:
         key = api_key or os.getenv("COHERE_API_KEY")
         if not key:
             raise ValueError("Cohere API key required for consolidation embeddings")
-        self.client = cohere.Client(key, base_url=base_url)
+        self.client = cohere.Client(api_key=key, base_url=base_url)
         self.embed_model = embed_model
         self.similarity_threshold = similarity_threshold
         self.max_cluster_size = max_cluster_size
@@ -56,7 +56,15 @@ class MemoryConsolidator:
             )
 
         resp = retry_call(_call, config=retry_cfg)
-        embeddings = getattr(resp, "embeddings", None) or resp["embeddings"]
+        raw = getattr(resp, "embeddings", None)
+        if raw is not None and hasattr(raw, "float_"):
+            embeddings = raw.float_
+        elif raw is not None and isinstance(raw, list):
+            embeddings = raw
+        elif isinstance(resp, dict):
+            embeddings = resp["embeddings"]
+        else:
+            embeddings = raw
         emb = np.array(embeddings, dtype=np.float32)
         emb = np.nan_to_num(emb, nan=0.0, posinf=0.0, neginf=0.0)
         norms = np.linalg.norm(emb, axis=1, keepdims=True)
@@ -122,11 +130,10 @@ class MemoryConsolidator:
             self.memory_store.add_entry(new_entry)
             new_entries.append(new_entry)
 
-            # Supersede old entries; resolve contradictions by keeping newest
             for idx in cluster:
                 old_entry = entries[idx]
                 if self._is_contradictory(old_entry.content, merged):
-                    self.memory_store.supersede_entry(old_entry.id, t_invalid=new_entry.t_observed)
+                    self.memory_store.delete_entry(old_entry.id)
                 else:
                     self.memory_store.supersede_entry(old_entry.id, t_invalid=new_entry.t_observed)
 

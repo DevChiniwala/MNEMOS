@@ -11,15 +11,13 @@ MEMORY_COUNT = Gauge("mnemos_active_memories", "Number of active memories in the
 class MetricsMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         start_time = time.time()
-        
-        # Identify route
         route_path = request.url.path
-        
+        status_code = 500
+
         try:
             response = await call_next(request)
             status_code = response.status_code
         except Exception as e:
-            status_code = 500
             raise e
         finally:
             elapsed = time.time() - start_time

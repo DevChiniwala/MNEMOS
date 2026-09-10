@@ -1,5 +1,5 @@
 from typing import Optional, Dict, List
-from datetime import datetime
+from datetime import datetime, timezone
 from pydantic import BaseModel, Field
 import uuid
 
@@ -9,7 +9,7 @@ class Tenant(BaseModel):
     name: str
     plan: str = "free"  # free | pro | enterprise
     api_key: str = Field(default_factory=lambda: f"mn_{uuid.uuid4().hex}")
-    created_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     max_memories: int = 10000
     max_queries_per_day: int = 1000
     is_active: bool = True
@@ -19,7 +19,7 @@ class Workspace(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     tenant_id: str
     name: str
-    created_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class TenantManager:
     """

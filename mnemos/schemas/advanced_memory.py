@@ -252,6 +252,18 @@ class AdvancedMemoryStore:
                 if self._dir_path:
                     self._save_to_disk()
 
+    def hard_delete_entry(self, entry_id: str) -> bool:
+        """Permanently removes an entry and all its versions from the store (GDPR Article 17)."""
+        with self._lock:
+            with self._persistence_lock():
+                self._refresh_from_disk()
+                before = len(self._state.entries)
+                self._state.entries = [e for e in self._state.entries if e.id != entry_id]
+                removed = len(self._state.entries) < before
+                if removed and self._dir_path:
+                    self._save_to_disk()
+                return removed
+
     def supersede_entry(self, entry_id: str, t_invalid: Optional[str] = None) -> None:
         with self._lock:
             with self._persistence_lock():

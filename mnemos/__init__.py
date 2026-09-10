@@ -99,6 +99,28 @@ try:
     from mnemos.maintenance import MemoryConsolidator
 except ImportError:
     MemoryConsolidator = None  # type: ignore
+
+try:
+    from mnemos.maintenance import SleepConsolidationJob
+except ImportError:
+    SleepConsolidationJob = None  # type: ignore
+
+try:
+    from mnemos.affect.salience import EmotionalSalienceScorer, FadingAffectModel
+except ImportError:
+    EmotionalSalienceScorer = None  # type: ignore
+    FadingAffectModel = None  # type: ignore
+
+try:
+    from mnemos.reinforcement.fsrs import SpacedRepetitionScheduler
+except ImportError:
+    SpacedRepetitionScheduler = None  # type: ignore
+
+try:
+    from mnemos.modalities.images import ImageMemoryProcessor
+except ImportError:
+    ImageMemoryProcessor = None  # type: ignore
+
 from mnemos.utils import CheckpointManager
 from mnemos.learning import ExperienceReplayBuffer
 try:
@@ -175,6 +197,11 @@ __all__ = [
     "UserProfileAgent",
     "HierarchicalSummarizer",
     "MemoryConsolidator",
+    "SleepConsolidationJob",
+    "EmotionalSalienceScorer",
+    "FadingAffectModel",
+    "SpacedRepetitionScheduler",
+    "ImageMemoryProcessor",
     "CheckpointManager",
     "ExperienceReplayBuffer",
     "RAGASEvaluator",

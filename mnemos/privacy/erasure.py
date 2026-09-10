@@ -24,8 +24,8 @@ class ErasureEngine:
         ]
 
         for entry_id in target_ids:
-            self.memory_store.delete_entry(entry_id)
-            deleted_count += 1
+            if self.memory_store.hard_delete_entry(entry_id):
+                deleted_count += 1
 
         audit_logger.log_erasure(
             actor=requestor_id,

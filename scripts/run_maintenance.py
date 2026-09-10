@@ -9,7 +9,7 @@ Cron-safe maintenance runner:
 import argparse
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 # Allow running from `scripts/` without requiring `pip install -e .`.
@@ -75,7 +75,7 @@ def main() -> int:
             except Exception:
                 graph_store = None
 
-    print(f"[{datetime.utcnow().isoformat()}] Maintenance start")
+    print(f"[{datetime.now(timezone.utc).isoformat()}] Maintenance start")
     if do_consolidate:
         consolidator = MemoryConsolidator(
             generator=generator,
@@ -144,7 +144,7 @@ def main() -> int:
                     pass
         print(f"[OK] Summaries added: {len(summaries)}")
 
-    print(f"[{datetime.utcnow().isoformat()}] Maintenance done")
+    print(f"[{datetime.now(timezone.utc).isoformat()}] Maintenance done")
     return 0
 
 

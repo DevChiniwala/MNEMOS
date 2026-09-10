@@ -30,21 +30,12 @@ class EmotionalSalienceScorer:
             "JSON:"
         )
         try:
-            # Assuming generator has a raw generation or similar method
-            # In mnemos, usually generate(prompt) or similar.
-            # We'll use a generic approach assuming a standard text generation interface.
-            # JITMIND uses _generate or generate depending on the wrapper.
-            # Let's rely on standard text output.
-            if hasattr(self.generator, "generate"):
-                response = self.generator.generate(prompt)
-            else:
-                return 0.5 # Safe fallback
-                
-            # Naive json extraction
-            start = response.find("{")
-            end = response.rfind("}") + 1
-            if start != -1 and end != -1:
-                data = json.loads(response[start:end])
+            result = self.generator.generate_single(prompt=prompt)
+            response = result.get("text", "")
+
+            from mnemos.utils.json_utils import extract_json_object
+            data = extract_json_object(response)
+            if data is not None:
                 return float(data.get("salience", 0.5))
             return 0.5
         except Exception:

@@ -71,10 +71,10 @@ else:
     if search:
         display_df = display_df[display_df['content'].str.contains(search, case=False, na=False)]
         
-    st.dataframe(
-        display_df[["id", "content", "tier", "t_created"]].sort_values(by="t_created", ascending=False),
-        use_container_width=True
-    )
+    display_cols = [c for c in ["id", "content", "tier", "t_created"] if c in display_df.columns]
+    sort_col = "t_created" if "t_created" in display_df.columns else None
+    sorted_df = display_df[display_cols].sort_values(by=sort_col, ascending=False) if sort_col else display_df[display_cols]
+    st.dataframe(sorted_df, use_container_width=True)
     
     st.subheader("Inspect Memory Details")
     memory_id = st.selectbox("Select Memory ID", display_df["id"].tolist())

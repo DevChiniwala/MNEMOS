@@ -1,26 +1,29 @@
 import uvicorn
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from prometheus_client import make_asgi_app
 from mnemos.server.routes import router
 from mnemos.server.deps import init_services
 from mnemos.server.metrics import MetricsMiddleware
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_services()
+    yield
+
+
 app = FastAPI(
     title="MNEMOS API Server",
     description="Just-in-time temporal memory system for AI agents.",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
-# Add Metrics Middleware
 app.add_middleware(MetricsMiddleware)
 
-# Prometheus metrics endpoint
 metrics_app = make_asgi_app()
 app.mount("/metrics", metrics_app)
-
-@app.on_event("startup")
-async def on_startup():
-    init_services()
 
 app.include_router(router, prefix="/v1")
 

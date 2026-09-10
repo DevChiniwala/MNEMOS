@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from mnemos.server.models import (
     MemorizeRequest, MemorizeResponse,
     ResearchRequest, ResearchResponse,
-    ExplainResponse
 )
 from mnemos.server.deps import get_memory_agent, get_research_agent, get_memory_store
+from mnemos.server.metrics import update_memory_gauge
 from mnemos.agents import MemoryAgent, ResearchAgent
 from mnemos.schemas.advanced_memory import AdvancedMemoryStore
 
@@ -48,6 +48,7 @@ async def list_memories(
     store: AdvancedMemoryStore = Depends(get_memory_store)
 ):
     active = store.get_entries(include_inactive=False)
+    update_memory_gauge(len(active))
     return {"memories": [m.model_dump() for m in active]}
 
 @router.get("/memories/{memory_id}")

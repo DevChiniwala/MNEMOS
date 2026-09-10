@@ -9,4 +9,9 @@ except ImportError:
     MemoryConsolidator = None  # type: ignore
     warnings.warn("MemoryConsolidator not available (optional dependencies may be missing)")
 
-__all__ = ["MemoryConsolidator"]
+try:
+    from .sleep import SleepConsolidationJob
+except ImportError:
+    SleepConsolidationJob = None  # type: ignore
+
+__all__ = ["MemoryConsolidator", "SleepConsolidationJob"]
