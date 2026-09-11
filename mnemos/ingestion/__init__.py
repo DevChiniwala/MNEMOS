@@ -11,6 +11,7 @@ from .loaders import (
     GDriveLoader,
 )
 from .pipeline import IngestionPipeline
+from .ecl_pipeline import ECLPipeline
 
 __all__ = [
     "Document",
@@ -27,4 +28,5 @@ __all__ = [
     "NotionLoader",
     "GDriveLoader",
     "IngestionPipeline",
+    "ECLPipeline",
 ]

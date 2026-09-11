@@ -19,17 +19,21 @@ from .retriever import (
     BM25RetrieverConfig,
     CohereEmbedRetrieverConfig,
     CohereRerankerConfig,
+    HybridRetrieverConfig,
+    ContextManagerConfig,
 )
 
 __all__ = [
     # Generator configurations
     "OpenAIGeneratorConfig",
     "VLLMGeneratorConfig",
-    
-    # Retriever configurations  
+
+    # Retriever configurations
     "DenseRetrieverConfig",
     "IndexRetrieverConfig",
     "BM25RetrieverConfig",
     "CohereEmbedRetrieverConfig",
     "CohereRerankerConfig",
+    "HybridRetrieverConfig",
+    "ContextManagerConfig",
 ]

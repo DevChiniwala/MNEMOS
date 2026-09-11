@@ -18,7 +18,7 @@ from mnemos.agents import MemoryAgent, ResearchAgent
 from mnemos.generator import AbsGenerator, OpenAIGenerator, VLLMGenerator
 
 # Retrievers
-from mnemos.retriever import AbsRetriever, IndexRetriever, GraphRetriever
+from mnemos.retriever import AbsRetriever, IndexRetriever, GraphRetriever, HybridRetriever, AdaptiveContextManager
 
 # Try to import optional retrievers
 try:
@@ -46,6 +46,8 @@ from mnemos.config import (
     IndexRetrieverConfig,
     CohereEmbedRetrieverConfig,
     CohereRerankerConfig,
+    HybridRetrieverConfig,
+    ContextManagerConfig,
 )
 
 # Schemas
@@ -89,6 +91,7 @@ from mnemos.ingestion import (
     NotionLoader,
     GDriveLoader,
     IngestionPipeline,
+    ECLPipeline,
 )
 from mnemos.profile import UserProfile, UserProfileStore, UserProfileAgent
 try:
@@ -156,7 +159,12 @@ __all__ = [
     "IndexRetrieverConfig",
     "CohereEmbedRetrieverConfig",
     "CohereRerankerConfig",
-    
+    "HybridRetrieverConfig",
+    "ContextManagerConfig",
+    "HybridRetriever",
+    "AdaptiveContextManager",
+    "ECLPipeline",
+
     # Schemas
     "MemoryState",
     "AdvancedMemoryStore",

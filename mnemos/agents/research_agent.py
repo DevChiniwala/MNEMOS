@@ -93,6 +93,7 @@ class ResearchAgent:
         checkpoint_every: int = 1,
         replay_buffer: Optional[ExperienceReplayBuffer] = None,
         profile_store: Optional[UserProfileStore] = None,
+        context_manager: Optional[Any] = None,
     ) -> None:
         if generator is None:
             raise ValueError("Generator instance is required for ResearchAgent")
@@ -117,6 +118,7 @@ class ResearchAgent:
         self.checkpoint_every = max(1, checkpoint_every)
         self.replay_buffer = replay_buffer
         self.profile_store = profile_store
+        self.context_manager = context_manager
         self._current_user_id: Optional[str] = None
         
         # Initialize system_prompts (default empty strings)
@@ -990,10 +992,21 @@ class ResearchAgent:
 
     def _build_memory_context(self, memory_state: MemoryState) -> str:
         profile_ctx = self._profile_context()
+
+        # Delegate to AdaptiveContextManager when available
+        if self.context_manager is not None and self._last_hits:
+            try:
+                return self.context_manager.pack(
+                    self._last_hits,
+                    memory_store=self.memory_store if isinstance(self.memory_store, AdvancedMemoryStore) else None,
+                    profile_context=profile_ctx,
+                )
+            except Exception:
+                pass  # fall through to legacy path
+
         if not memory_state.abstracts:
             return profile_ctx or "No memory currently."
 
-        # Prefer ranked entries if available and context pressure is high
         if isinstance(self.memory_store, AdvancedMemoryStore):
             entries = self.memory_store.get_ranked_entries(limit=len(self.memory_store.get_entries()))
             lines = []
@@ -1006,7 +1019,6 @@ class ResearchAgent:
             pressure, needs_trim = self._check_context_pressure(full_context)
             if not needs_trim:
                 return f"{profile_ctx}\n\n{full_context}" if profile_ctx else full_context
-            # Trim to fit budget
             budget = int(self.max_context_tokens * self.context_warning_threshold)
             trimmed_lines = []
             current = 0
@@ -1018,13 +1030,11 @@ class ResearchAgent:
             context = "\n".join(trimmed_lines) if trimmed_lines else "No memory currently."
             return f"{profile_ctx}\n\n{context}" if profile_ctx else context
 
-        # Fallback: use recent abstracts if pressure is high
         lines = [f"Page {i}: {a}" for i, a in enumerate(memory_state.abstracts)]
         full_context = "\n".join(lines)
         pressure, needs_trim = self._check_context_pressure(full_context)
         if not needs_trim:
             return f"{profile_ctx}\n\n{full_context}" if profile_ctx else full_context
-        # Keep most recent abstracts
         budget = int(self.max_context_tokens * self.context_warning_threshold)
         trimmed_lines = []
         current = 0

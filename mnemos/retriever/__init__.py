@@ -60,3 +60,8 @@ except ImportError:
     CohereReranker = None  # type: ignore
     import warnings
     warnings.warn("CohereReranker not available (cohere dependency may be missing)")
+
+from .hybrid import HybridRetriever
+from .context import AdaptiveContextManager
+
+__all__.extend(["HybridRetriever", "AdaptiveContextManager"])

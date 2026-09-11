@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Any, Union, List, Optional
+from typing import Any, Dict, Union, List, Optional
 
 
 @dataclass
@@ -53,3 +53,30 @@ class CohereRerankerConfig:
     base_url: str = "https://api.cohere.com"
     model_name: str = "rerank-v4.0-pro"
     top_k: int = 20
+
+
+@dataclass
+class HybridRetrieverConfig:
+    """
+    Hybrid multi-signal retriever configuration.
+    Weights follow MemTier (arXiv:2605.03675) 6-signal scoring.
+    """
+    weights: Dict[str, float] = field(default_factory=lambda: {
+        "semantic": 0.20,
+        "lexical": 0.30,
+        "graph": 0.15,
+        "time_decay": 0.15,
+        "cognitive": 0.10,
+        "tier": 0.10,
+    })
+    decay_lambda: float = 0.05
+    decay_bypass_threshold: float = 2.0
+    top_k: int = 10
+
+
+@dataclass
+class ContextManagerConfig:
+    """Adaptive context manager configuration."""
+    max_tokens: int = 2000
+    tiktoken_model: str = "cl100k_base"
+    dedup_threshold: float = 0.60
