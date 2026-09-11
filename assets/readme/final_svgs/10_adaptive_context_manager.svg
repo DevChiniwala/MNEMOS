@@ -1,0 +1,177 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Adaptive Context Manager</title>
+  <desc id="desc">Token-budget-aware context packing with tiktoken counting, greedy best-first scoring, trigram dedup, and LLM compression.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#F8FCFF"/><stop offset="100%" stop-color="#EEF5FF"/></linearGradient>
+    <linearGradient id="tealAmber" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0EA5A0"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient>
+    <linearGradient id="budgetBar" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0EA5A0"/><stop offset="60%" stop-color="#10B981"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#0B0F19" flood-opacity="0.14"/></filter>
+    <style>
+      .title{font:800 36px Inter,Segoe UI,Arial,sans-serif;fill:#0B0F19}
+      .sub{font:600 18px Inter,Segoe UI,Arial,sans-serif;fill:#334155}
+      .h{font:800 18px Inter,Segoe UI,Arial,sans-serif;fill:#0B0F19}
+      .h-teal{font:800 18px Inter,Segoe UI,Arial,sans-serif;fill:#0EA5A0}
+      .h-amber{font:800 18px Inter,Segoe UI,Arial,sans-serif;fill:#D97706}
+      .p{font:600 14px Inter,Segoe UI,Arial,sans-serif;fill:#1E293B}
+      .p-sm{font:600 12px Inter,Segoe UI,Arial,sans-serif;fill:#475569}
+      .num{font:800 42px Inter,Segoe UI,Arial,sans-serif;fill:#0EA5A0}
+      .num-label{font:700 14px Inter,Segoe UI,Arial,sans-serif;fill:#64748B}
+      .chip{font:800 12px Inter,Segoe UI,Arial,sans-serif;fill:#FFFFFF}
+      .code{font:600 13px 'Fira Code',Consolas,monospace;fill:#0EA5A0}
+      .edge{stroke:url(#tealAmber);stroke-width:4;fill:none;stroke-linecap:round;stroke-dasharray:8 6;animation:dash 6s linear infinite}
+      .panel-a{transform-box:fill-box;transform-origin:center;animation:floatA 6.2s ease-in-out infinite}
+      .panel-b{transform-box:fill-box;transform-origin:center;animation:floatB 7.3s ease-in-out infinite}
+      .panel-c{transform-box:fill-box;transform-origin:center;animation:floatC 8.1s ease-in-out infinite}
+      .scan{opacity:0.25;animation:scanX 9s linear infinite}
+      .fill-anim{animation:fillBar 4s ease-in-out infinite alternate}
+      @keyframes dash{to{stroke-dashoffset:-160}}
+      @keyframes floatA{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+      @keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+      @keyframes floatC{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+      @keyframes scanX{0%{transform:translateX(-260px)}100%{transform:translateX(1700px)}}
+      @keyframes fillBar{0%{width:200px}100%{width:900px}}
+    </style>
+    <marker id="arr" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#0EA5A0"/></marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect x="30" y="30" width="1540" height="840" rx="24" fill="#FFFFFF" stroke="#DDE7F7" filter="url(#softShadow)"/>
+  <rect class="scan" x="-260" y="156" width="220" height="5" rx="3" fill="url(#tealAmber)"/>
+
+  <text x="70" y="90" class="title">AdaptiveContextManager — Token-Budget Packing</text>
+  <text x="70" y="120" class="sub">Greedy best-first context assembly with tiktoken precision, trigram dedup, and LLM compression fallback.</text>
+
+  <!-- Token budget visualization bar -->
+  <rect x="70" y="142" width="1460" height="30" rx="8" fill="#F0F4F8" stroke="#DDE7F7"/>
+  <rect x="72" y="144" width="900" height="26" rx="6" fill="url(#budgetBar)" opacity="0.7"/>
+  <text x="984" y="163" class="p" fill="#64748B">← 2000 tokens (default budget) →</text>
+
+  <!-- Step 1: Input -->
+  <g class="panel-a">
+    <rect x="70" y="195" width="340" height="200" rx="16" fill="#ECFDFA" stroke="#0EA5A0"/>
+    <rect x="70" y="195" width="340" height="42" rx="16" fill="#0EA5A0"/>
+    <rect x="70" y="221" width="340" height="16" fill="#0EA5A0"/>
+    <text x="90" y="222" class="chip">STEP 1 — INPUT</text>
+    <text x="90" y="265" class="h-teal">Scored Hits Arrive</text>
+    <text x="90" y="290" class="p">Hits from HybridRetriever</text>
+    <text x="90" y="310" class="p">sorted by combined score</text>
+    <text x="90" y="340" class="code">pack(hits, memory_store,</text>
+    <text x="90" y="358" class="code">      profile_context) → str</text>
+    <text x="90" y="383" class="p-sm">Each hit has page_id, snippet, and meta scores</text>
+  </g>
+
+  <!-- Step 2: Token Count -->
+  <g class="panel-b">
+    <rect x="440" y="195" width="340" height="200" rx="16" fill="#FFF7EB" stroke="#F59E0B"/>
+    <rect x="440" y="195" width="340" height="42" rx="16" fill="#F59E0B"/>
+    <rect x="440" y="221" width="340" height="16" fill="#F59E0B"/>
+    <text x="460" y="222" class="chip">STEP 2 — MEASURE</text>
+    <text x="460" y="265" class="h-amber">Tiktoken Precision</text>
+    <text x="460" y="290" class="p">Exact token count per memory</text>
+    <text x="460" y="310" class="p">using cl100k_base encoding</text>
+    <text x="460" y="340" class="code">count_tokens(text) → int</text>
+    <text x="460" y="358" class="code"># replaces naive len//4</text>
+    <text x="460" y="383" class="p-sm">Already a core dep — zero additional cost</text>
+  </g>
+
+  <!-- Step 3: Dedup -->
+  <g class="panel-c">
+    <rect x="810" y="195" width="340" height="200" rx="16" fill="#F5FAFF" stroke="#BFD0EE"/>
+    <rect x="810" y="195" width="340" height="42" rx="16" fill="#3B82F6"/>
+    <rect x="810" y="221" width="340" height="16" fill="#3B82F6"/>
+    <text x="830" y="222" class="chip">STEP 3 — DEDUP</text>
+    <text x="830" y="265" class="h">Trigram Similarity</text>
+    <text x="830" y="290" class="p">Character trigram Jaccard</text>
+    <text x="830" y="310" class="p">similarity between snippets</text>
+    <text x="830" y="340" class="code">if jaccard(a, b) ≥ 0.60:</text>
+    <text x="830" y="358" class="code">  skip(b)  # near-duplicate</text>
+    <text x="830" y="383" class="p-sm">Prevents wasting budget on overlapping content</text>
+  </g>
+
+  <!-- Step 4: Pack / Compress -->
+  <g class="panel-a">
+    <rect x="1180" y="195" width="350" height="200" rx="16" fill="#ECFDFA" stroke="#0EA5A0"/>
+    <rect x="1180" y="195" width="350" height="42" rx="16" fill="#0EA5A0"/>
+    <rect x="1180" y="221" width="350" height="16" fill="#0EA5A0"/>
+    <text x="1200" y="222" class="chip">STEP 4 — PACK OR COMPRESS</text>
+    <text x="1200" y="265" class="h-teal">Greedy Best-First</text>
+    <text x="1200" y="290" class="p">Add memories by score until</text>
+    <text x="1200" y="310" class="p">budget exhausted. If candidates</text>
+    <text x="1200" y="330" class="p">exceed 1.5× budget, trigger</text>
+    <text x="1200" y="350" class="p">LLM distillation compression.</text>
+    <text x="1200" y="383" class="p-sm">Fallback ensures no essential content is dropped</text>
+  </g>
+
+  <!-- Flow arrows between steps -->
+  <path class="edge" d="M410,295 L440,295" marker-end="url(#arr)"/>
+  <path class="edge" d="M780,295 L810,295" marker-end="url(#arr)"/>
+  <path class="edge" d="M1150,295 L1180,295" marker-end="url(#arr)"/>
+
+  <!-- Divider -->
+  <rect x="70" y="418" width="1460" height="4" rx="2" fill="url(#tealAmber)" opacity="0.3"/>
+
+  <!-- Key metrics -->
+  <g class="panel-b">
+    <rect x="70" y="445" width="220" height="180" rx="16" fill="#F0FDF9" stroke="#0EA5A066"/>
+    <text x="130" y="500" class="num" text-anchor="middle">2k</text>
+    <text x="130" y="524" class="num-label" text-anchor="middle">default budget</text>
+    <text x="90" y="555" class="p">Token-precise packing</text>
+    <text x="90" y="575" class="p">via tiktoken encoder</text>
+    <text x="90" y="605" class="p-sm">Configurable per deployment</text>
+  </g>
+
+  <g class="panel-c">
+    <rect x="310" y="445" width="220" height="180" rx="16" fill="#FFFBF0" stroke="#F59E0B66"/>
+    <text x="370" y="500" class="num" text-anchor="middle">0.60</text>
+    <text x="370" y="524" class="num-label" text-anchor="middle">dedup threshold</text>
+    <text x="330" y="555" class="p">Jaccard similarity</text>
+    <text x="330" y="575" class="p">over char trigrams</text>
+    <text x="330" y="605" class="p-sm">Balanced precision / recall</text>
+  </g>
+
+  <g class="panel-a">
+    <rect x="550" y="445" width="220" height="180" rx="16" fill="#F5FAFF" stroke="#BFD0EE"/>
+    <text x="610" y="500" class="num" text-anchor="middle">1.5×</text>
+    <text x="610" y="524" class="num-label" text-anchor="middle">compress trigger</text>
+    <text x="570" y="555" class="p">When total candidates</text>
+    <text x="570" y="575" class="p">exceed 1.5× budget</text>
+    <text x="570" y="605" class="p-sm">LLM distillation fallback</text>
+  </g>
+
+  <!-- Architecture note -->
+  <g class="panel-b">
+    <rect x="800" y="445" width="730" height="180" rx="16" fill="#ECFDFA" stroke="#0EA5A0"/>
+    <text x="820" y="475" class="h-teal">Why This Matters (MemTier Insight)</text>
+    <text x="820" y="505" class="p">MemTier (arXiv:2605.03675) shows that k=2 entries at 300-600 tokens consistently</text>
+    <text x="820" y="525" class="p">outperforms larger retrieval budgets. More context ≠ better answers. The key is</text>
+    <text x="820" y="545" class="p">packing the right memories, not all memories.</text>
+    <text x="820" y="575" class="p">AdaptiveContextManager implements this insight: precise token counting, aggressive</text>
+    <text x="820" y="595" class="p">deduplication, and greedy score-ordered packing ensure only the most relevant,</text>
+    <text x="820" y="615" class="p">non-redundant content fills the context window.</text>
+  </g>
+
+  <!-- Bottom: Output panel -->
+  <rect x="70" y="648" width="1460" height="4" rx="2" fill="url(#tealAmber)" opacity="0.3"/>
+
+  <g class="panel-c">
+    <rect x="70" y="675" width="730" height="180" rx="16" fill="#F5FAFF" stroke="#BFD0EE"/>
+    <text x="90" y="707" class="h">Output Format</text>
+    <text x="90" y="735" class="code">pack() → str</text>
+    <text x="90" y="758" class="p">Returns a single formatted string ready for LLM context injection:</text>
+    <text x="90" y="785" class="code">"[Memory 1 — score: 0.87] The user prefers ..."</text>
+    <text x="90" y="805" class="code">"[Memory 2 — score: 0.73] Project deadline is ..."</text>
+    <text x="90" y="825" class="code">"[Profile] Senior engineer, Go + React stack"</text>
+    <text x="90" y="845" class="p-sm">Profile context is prepended when available, memories ordered by retrieval score</text>
+  </g>
+
+  <g class="panel-a">
+    <rect x="830" y="675" width="700" height="180" rx="16" fill="#FFF7EB" stroke="#F59E0B66"/>
+    <text x="850" y="707" class="h-amber">Integration</text>
+    <text x="850" y="735" class="p">ResearchAgent delegates to context_manager.pack() when available,</text>
+    <text x="850" y="755" class="p">falling back to the legacy _build_memory_context() path otherwise.</text>
+    <text x="850" y="785" class="p">Configured via ContextManagerConfig dataclass:</text>
+    <text x="850" y="812" class="code">max_tokens: int = 2000</text>
+    <text x="850" y="832" class="code">tiktoken_model: str = "cl100k_base"</text>
+    <text x="850" y="852" class="code">dedup_threshold: float = 0.60</text>
+  </g>
+</svg>

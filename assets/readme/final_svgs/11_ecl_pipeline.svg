@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">ECL Pipeline — Extract, Cognify, Load</title>
+  <desc id="desc">Cognee-inspired ingestion pipeline that enriches memories with emotional salience and FSRS spaced-repetition baselines at write-time.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#F8FCFF"/><stop offset="100%" stop-color="#EEF5FF"/></linearGradient>
+    <linearGradient id="tealAmber" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0EA5A0"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient>
+    <linearGradient id="eclFlow" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0EA5A0"/><stop offset="33%" stop-color="#6366F1"/><stop offset="66%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#EF4444"/></linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#0B0F19" flood-opacity="0.14"/></filter>
+    <filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <style>
+      .title{font:800 36px Inter,Segoe UI,Arial,sans-serif;fill:#0B0F19}
+      .sub{font:600 18px Inter,Segoe UI,Arial,sans-serif;fill:#334155}
+      .h{font:800 20px Inter,Segoe UI,Arial,sans-serif;fill:#0B0F19}
+      .h-teal{font:800 20px Inter,Segoe UI,Arial,sans-serif;fill:#0EA5A0}
+      .h-purple{font:800 20px Inter,Segoe UI,Arial,sans-serif;fill:#6366F1}
+      .h-amber{font:800 20px Inter,Segoe UI,Arial,sans-serif;fill:#D97706}
+      .p{font:600 14px Inter,Segoe UI,Arial,sans-serif;fill:#1E293B}
+      .p-sm{font:600 12px Inter,Segoe UI,Arial,sans-serif;fill:#475569}
+      .code{font:600 13px 'Fira Code',Consolas,monospace;fill:#0EA5A0}
+      .chip{font:800 13px Inter,Segoe UI,Arial,sans-serif;fill:#FFFFFF}
+      .chip-dark{font:800 13px Inter,Segoe UI,Arial,sans-serif;fill:#0B0F19}
+      .step-num{font:800 60px Inter,Segoe UI,Arial,sans-serif;fill:#0EA5A0;opacity:0.12}
+      .edge{stroke:url(#tealAmber);stroke-width:5;fill:none;stroke-linecap:round;stroke-dasharray:10 7;animation:dash 5s linear infinite}
+      .edge-ecl{stroke:url(#eclFlow);stroke-width:5;fill:none;stroke-linecap:round;stroke-dasharray:10 7;animation:dash 5s linear infinite}
+      .panel-a{transform-box:fill-box;transform-origin:center;animation:floatA 6.2s ease-in-out infinite}
+      .panel-b{transform-box:fill-box;transform-origin:center;animation:floatB 7.3s ease-in-out infinite}
+      .panel-c{transform-box:fill-box;transform-origin:center;animation:floatC 8.1s ease-in-out infinite}
+      .scan{opacity:0.25;animation:scanX 9s linear infinite}
+      .pulse{animation:pulse 2.4s ease-in-out infinite}
+      @keyframes dash{to{stroke-dashoffset:-160}}
+      @keyframes floatA{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+      @keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+      @keyframes floatC{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+      @keyframes scanX{0%{transform:translateX(-260px)}100%{transform:translateX(1700px)}}
+      @keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
+    </style>
+    <marker id="arr" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 z" fill="#0EA5A0"/></marker>
+    <marker id="arr-purple" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 z" fill="#6366F1"/></marker>
+    <marker id="arr-amber" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto"><path d="M0,0 L14,7 L0,14 z" fill="#F59E0B"/></marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect x="30" y="30" width="1540" height="840" rx="24" fill="#FFFFFF" stroke="#DDE7F7" filter="url(#softShadow)"/>
+  <rect class="scan" x="-260" y="156" width="220" height="5" rx="3" fill="url(#eclFlow)"/>
+
+  <text x="70" y="90" class="title">ECL Pipeline — Extract, Cognify, Load</text>
+  <text x="70" y="120" class="sub">Cognee-inspired ingestion that enriches every memory with emotional salience and FSRS baselines at write-time.</text>
+
+  <!-- E - Extract Phase -->
+  <text x="85" y="230" class="step-num">E</text>
+  <g class="panel-a">
+    <rect x="70" y="155" width="440" height="310" rx="20" fill="#ECFDFA" stroke="#0EA5A0" stroke-width="2"/>
+    <rect x="70" y="155" width="440" height="48" rx="20" fill="#0EA5A0"/>
+    <rect x="70" y="183" width="440" height="20" fill="#0EA5A0"/>
+    <text x="100" y="186" class="chip">EXTRACT</text>
+    <text x="90" y="235" class="h-teal">Parse Raw Input</text>
+    <text x="90" y="264" class="p">Loaders: TextFile, Directory, URL, JSONL,</text>
+    <text x="90" y="284" class="p">S3, Notion, GDrive — all built-in</text>
+    <text x="90" y="314" class="p">Chunkers: SimpleChunker (configurable</text>
+    <text x="90" y="334" class="p">chunk_size, overlap, separators)</text>
+    <text x="90" y="364" class="p">Deduplication: SHA-256 content hashing</text>
+    <text x="90" y="384" class="p">to skip already-ingested chunks</text>
+    <text x="90" y="414" class="code">loader.load() → List[Document]</text>
+    <text x="90" y="434" class="code">chunker.chunk(doc) → List[Chunk]</text>
+    <text x="90" y="455" class="p-sm">Same infrastructure as IngestionPipeline — zero migration cost</text>
+  </g>
+
+  <!-- Arrow E → C -->
+  <path d="M510,310 L560,310" stroke="#6366F1" stroke-width="5" fill="none" stroke-dasharray="10 7" marker-end="url(#arr-purple)">
+    <animate attributeName="stroke-dashoffset" from="0" to="-170" dur="5s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- C - Cognify Phase -->
+  <text x="595" y="230" class="step-num">C</text>
+  <g class="panel-b">
+    <rect x="580" y="155" width="440" height="310" rx="20" fill="#F3F0FF" stroke="#6366F1" stroke-width="2"/>
+    <rect x="580" y="155" width="440" height="48" rx="20" fill="#6366F1"/>
+    <rect x="580" y="183" width="440" height="20" fill="#6366F1"/>
+    <text x="610" y="186" class="chip">COGNIFY</text>
+    <text x="600" y="235" class="h-purple">Enrich with Intelligence</text>
+
+    <text x="600" y="264" class="p">Emotional Salience Scoring:</text>
+    <text x="600" y="284" class="code">EmotionalSalienceScorer.score(chunk)</text>
+    <text x="600" y="304" class="code">  → meta["salience"] = 0.0 – 1.0</text>
+
+    <text x="600" y="334" class="p">FSRS Spaced Repetition Baselines:</text>
+    <text x="600" y="354" class="code">meta["fsrs_stability"] = 0.4</text>
+    <text x="600" y="374" class="code">meta["fsrs_difficulty"] = 0.3</text>
+    <text x="600" y="394" class="code">meta["fsrs_next_review"] = now + 1d</text>
+
+    <text x="600" y="424" class="p">Both scorers are optional — when absent,</text>
+    <text x="600" y="444" class="p">cognify step is skipped (backward compat)</text>
+    <text x="600" y="455" class="p-sm">Wires up previously disconnected cognitive features at write-time</text>
+  </g>
+
+  <!-- Arrow C → L -->
+  <path d="M1020,310 L1070,310" stroke="#F59E0B" stroke-width="5" fill="none" stroke-dasharray="10 7" marker-end="url(#arr-amber)">
+    <animate attributeName="stroke-dashoffset" from="0" to="-170" dur="5s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- L - Load Phase -->
+  <text x="1105" y="230" class="step-num">L</text>
+  <g class="panel-c">
+    <rect x="1090" y="155" width="440" height="310" rx="20" fill="#FFF7EB" stroke="#F59E0B" stroke-width="2"/>
+    <rect x="1090" y="155" width="440" height="48" rx="20" fill="#F59E0B"/>
+    <rect x="1090" y="183" width="440" height="20" fill="#F59E0B"/>
+    <text x="1120" y="186" class="chip">LOAD</text>
+    <text x="1110" y="235" class="h-amber">Commit to Memory</text>
+    <text x="1110" y="264" class="p">MemoryAgent.memorize() for each chunk</text>
+    <text x="1110" y="284" class="p">with enriched metadata attached</text>
+    <text x="1110" y="314" class="p">Atomic write: memory store + page store</text>
+    <text x="1110" y="334" class="p">+ graph layer (when available)</text>
+    <text x="1110" y="364" class="p">Returns MemoryUpdate with:</text>
+    <text x="1110" y="384" class="code">result.new_state  # updated memory</text>
+    <text x="1110" y="404" class="code">result.new_page   # indexed page</text>
+    <text x="1110" y="424" class="code">result.new_page.meta["memory_id"]</text>
+    <text x="1110" y="455" class="p-sm">Every memory born with salience + FSRS baselines from day 1</text>
+  </g>
+
+  <!-- Divider -->
+  <rect x="70" y="490" width="1460" height="4" rx="2" fill="url(#eclFlow)" opacity="0.4"/>
+
+  <!-- Bottom section: Comparison & Details -->
+  <g class="panel-a">
+    <rect x="70" y="518" width="490" height="200" rx="16" fill="#F5FAFF" stroke="#BFD0EE"/>
+    <text x="90" y="548" class="h">vs. IngestionPipeline (legacy)</text>
+    <rect x="90" y="562" width="160" height="24" rx="6" fill="#E2E8F0"/>
+    <text x="100" y="580" class="p-sm">IngestionPipeline</text>
+    <rect x="260" y="562" width="100" height="24" rx="6" fill="#ECFDFA" stroke="#0EA5A066"/>
+    <text x="270" y="580" class="p-sm">ECLPipeline</text>
+    <text x="90" y="610" class="p">Extract: same loaders + chunkers</text>
+    <text x="322" y="610" class="p" fill="#10B981">identical</text>
+    <text x="90" y="632" class="p">Cognify: not available</text>
+    <text x="322" y="632" class="p" fill="#0EA5A0">salience + FSRS</text>
+    <text x="90" y="654" class="p">Load: basic memorize()</text>
+    <text x="322" y="654" class="p" fill="#0EA5A0">enriched memorize()</text>
+    <text x="90" y="676" class="p">Dedup: SHA-256 hashing</text>
+    <text x="322" y="676" class="p" fill="#10B981">identical</text>
+    <text x="90" y="700" class="p-sm">ECLPipeline is a drop-in upgrade — same interface, richer output</text>
+  </g>
+
+  <g class="panel-b">
+    <rect x="590" y="518" width="470" height="200" rx="16" fill="#ECFDFA" stroke="#0EA5A0"/>
+    <text x="610" y="548" class="h-teal">Cognitive Enrichment Details</text>
+    <text x="610" y="578" class="p">EmotionalSalienceScorer uses the LLM to rate content</text>
+    <text x="610" y="598" class="p">on a 0.0-1.0 emotional significance scale. High-salience</text>
+    <text x="610" y="618" class="p">memories get preferential retrieval via φ_cw signal.</text>
+    <text x="610" y="648" class="p">FSRS (Free Spaced Repetition Scheduler) sets initial</text>
+    <text x="610" y="668" class="p">stability, difficulty, and next-review timestamps. This</text>
+    <text x="610" y="688" class="p">drives the spaced-repetition loop for memory strength.</text>
+    <text x="610" y="710" class="p-sm">Both feed into HybridRetriever's cognitive weight (φ_cw = 0.6×salience + 0.4×FSRS)</text>
+  </g>
+
+  <g class="panel-c">
+    <rect x="1090" y="518" width="440" height="200" rx="16" fill="#FFF7EB" stroke="#F59E0B"/>
+    <text x="1110" y="548" class="h-amber">Usage</text>
+    <text x="1110" y="578" class="code">from mnemos import ECLPipeline</text>
+    <text x="1110" y="598" class="code">from mnemos import (</text>
+    <text x="1110" y="618" class="code">  EmotionalSalienceScorer,</text>
+    <text x="1110" y="638" class="code">  SpacedRepetitionScheduler</text>
+    <text x="1110" y="658" class="code">)</text>
+    <text x="1110" y="688" class="code">pipeline = ECLPipeline(</text>
+    <text x="1110" y="708" class="code">  salience_scorer=scorer,</text>
+    <text x="1110" y="728" class="p-sm">Backward-compatible: omit scorers to use as a basic pipeline</text>
+  </g>
+
+  <!-- Bottom origin note -->
+  <g class="panel-a">
+    <rect x="70" y="740" width="1460" height="110" rx="16" fill="#F0FDF9" stroke="#0EA5A033"/>
+    <text x="90" y="770" class="h">Inspired By</text>
+    <text x="90" y="798" class="p">Cognee's ECL (Extract, Cognify, Load) architecture — a principled ingestion pattern that treats memory enrichment</text>
+    <text x="90" y="818" class="p">as a first-class pipeline stage rather than an afterthought. Combined with MemTier's insight that cognitive signals</text>
+    <text x="90" y="838" class="p">improve retrieval quality, ECLPipeline ensures every memory is born ready for intelligent retrieval.</text>
+  </g>
+</svg>

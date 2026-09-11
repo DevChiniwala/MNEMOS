@@ -1,1364 +1,639 @@
 <div align="center">
 
+<br/>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/final_svgs/01_system_overview.svg"/>
+  <img alt="MNEMOS System Overview" src="assets/readme/final_svgs/01_system_overview.svg" width="100%"/>
+</picture>
+
+<br/>
+
 # MNEMOS
 
 ### Just-in-time memory system for AI agents
 
-Self-editing bi-temporal memory + temporal graph reasoning + an iterative Plan -> Search -> Integrate -> Reflect loop for evidence-grounded answers.  
-It fuses BM25 + dense + graph retrieval with robust ranking + provenance so long-running agents stay accurate as facts change.
-
-[![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue.svg?style=flat)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](LICENSE)
-[![Memory: Self-Editing](https://img.shields.io/badge/memory-self--editing-0ea5a4.svg?style=flat)](#features)
-[![Time: Bi-Temporal](https://img.shields.io/badge/time-bi--temporal-f59e0b.svg?style=flat)](#features)
-[![Graph: Temporal Reasoning](https://img.shields.io/badge/graph-temporal%20reasoning-111827.svg?style=flat)](#features)
-[![Retrieval: Hybrid Fusion](https://img.shields.io/badge/retrieval-hybrid%20fusion-1f2937.svg?style=flat)](#features)
-[![Loop: Plan-Search-Integrate-Reflect](https://img.shields.io/badge/loop-plan--search--integrate--reflect-0f172a.svg?style=flat)](#features)
-[![Status: Research](https://img.shields.io/badge/status-research-7c3aed.svg?style=flat)](#)
+Self-editing bi-temporal memory · hybrid 6-signal retrieval fusion · temporal graph reasoning
+Plan → Search → Integrate → Reflect loop for evidence-grounded answers
 
 <br/>
 
-<b>Author:</b> <a href="https://github.com/DevChiniwala">Dev Chiniwala</a>
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-22C55E.svg?style=for-the-badge)](LICENSE)
+[![Status: Research](https://img.shields.io/badge/status-research-7C3AED.svg?style=for-the-badge)]()
+
+[![Memory: Self-Editing](https://img.shields.io/badge/memory-self--editing-0EA5A0.svg?style=flat-square)](#self-editing-memory)
+[![Time: Bi-Temporal](https://img.shields.io/badge/time-bi--temporal-F59E0B.svg?style=flat-square)](#bi-temporal-model)
+[![Graph: Temporal Reasoning](https://img.shields.io/badge/graph-temporal%20reasoning-6366F1.svg?style=flat-square)](#graph-memory)
+[![Retrieval: 6-Signal Hybrid](https://img.shields.io/badge/retrieval-6--signal%20hybrid-EF4444.svg?style=flat-square)](#hybrid-retriever)
+[![Context: Adaptive Packing](https://img.shields.io/badge/context-adaptive%20packing-3B82F6.svg?style=flat-square)](#adaptive-context)
+[![Ingestion: ECL Pipeline](https://img.shields.io/badge/ingestion-ECL%20pipeline-10B981.svg?style=flat-square)](#ecl-pipeline)
+[![Loop: Plan-Search-Integrate-Reflect](https://img.shields.io/badge/loop-PSIR-0F172A.svg?style=flat-square)](#research-loop)
+
+<br/>
+
+**Author:** [Dev Chiniwala](https://github.com/DevChiniwala)
 
 <br/>
 
 </div>
 
-<a id="features"></a>
-## ðŸš€ Features
+---
 
-MNEMOS is a memory-first runtime for AI agents that need durable knowledge, temporal correctness, and retrieval that works under real context pressure.
+## Why MNEMOS
 
-Most memory systems fail gradually for one of three reasons:
+Most AI memory systems fail gradually because they only append (stale facts persist), ignore temporal validity (wrong answers at the wrong time), or optimize one retrieval mode (fragile on diverse queries).
 
-1. They only append new memories, so stale or wrong facts remain active forever.
-2. They store time as metadata but do not enforce temporal validity during retrieval.
-3. They optimize one retrieval mode (dense or sparse) and lose robustness on real query diversity.
+MNEMOS directly addresses all three:
 
-MNEMOS directly addresses these failure modes with:
-
-- A self-editing memory lifecycle (`ADD`, `UPDATE`, `DELETE`, `NOOP`).
-- A bi-temporal memory model (`t_created`, `t_observed`, `t_valid`, `t_invalid`, `t_expired`).
-- A hybrid retrieval stack (BM25 + dense + index + graph) with RRF, dynamic weighting, tier-aware boosting, and optional reranking.
-- A looped research process (plan -> search -> integrate -> reflect) instead of one-shot generation.
-- Graph memory with entity semantics, provenance edges, and Personalized PageRank for associative recall.
-
-This README is intentionally long and deep. It is meant to make a new contributor productive quickly, and to make an architecture reviewer confident that the system has real technical substance.
+| Failure Mode | MNEMOS Solution |
+|:---|:---|
+| Stale facts persist forever | **Self-editing lifecycle** — ADD, UPDATE, DELETE, NOOP on every write |
+| No temporal validity | **Bi-temporal model** — `t_created`, `t_observed`, `t_valid`, `t_invalid`, `t_expired` |
+| Single retrieval mode | **6-signal hybrid fusion** — semantic + lexical + graph + time decay + cognitive + tier |
+| Context window waste | **Adaptive context packing** — tiktoken-precise budgets with trigram dedup |
+| Raw ingestion | **ECL pipeline** — enriches memories with salience + FSRS at write-time |
 
 ---
 
-### Who This Repo Is For
+## Visual Architecture
 
-- Agent framework developers who need long-horizon memory that does not rot.
-- Applied AI engineers shipping production assistants with dynamic context limits.
-- Researchers exploring memory quality under temporal drift and contradictory inputs.
-- Platform teams that need explainable, provenance-aware retrieval instead of opaque embeddings only.
+<p align="center">
+  <img src="assets/readme/root_readme_images/01_mnemos_graph_memory_overview.png" alt="Graph Memory Overview" width="32%"/>
+  <img src="assets/readme/root_readme_images/02_mnemos_temporal_validity_panel.png" alt="Temporal Validity" width="32%"/>
+  <img src="assets/readme/root_readme_images/03_mnemos_retrieval_fusion_panel.png" alt="Retrieval Fusion" width="32%"/>
+</p>
 
----
-
-### What's Included
-
-This repository currently includes:
-
-- Core package: `mnemos/`
-- Examples: `examples/quickstart/`
-- Evaluation entrypoints: `eval/`
-- Test suite (TTL-centric): `tests/`
-- Operational scripts: `scripts/`
-- Visual assets and architecture SVGs: `assets/readme/`
-- Packaging: `setup.py`, `pyproject.toml`, `requirements.txt`
-
-Notes on current state:
-
-- Dependencies are declared in `requirements.txt` and `pyproject.toml`.
-- Test coverage is strongest for TTL/persistence behavior; broader end-to-end benchmark automation is present as evaluation entrypoints and should be extended per deployment needs.
+<p align="center">
+  <img src="assets/readme/root_readme_images/04_mnemos_self_editing_lifecycle.png" alt="Self-Editing Lifecycle" width="32%"/>
+  <img src="assets/readme/root_readme_images/05_mnemos_hierarchical_memory_tiers.png" alt="Hierarchical Tiers" width="32%"/>
+  <img src="assets/readme/root_readme_images/06_mnemos_production_readiness_dashboard.png" alt="Production Readiness" width="32%"/>
+</p>
 
 ---
 
-### ðŸ“‘ Table of Contents
+## Table of Contents
 
-1. [Features](#features)
-2. [Installation & Usage](#installation-and-usage)
-3. [Configuration](#configuration)
-4. [Usage](#usage)
-5. [Visual Identity and Embedded Assets](#visual-identity-and-embedded-assets)
-6. [System Thesis and Design Principles](#system-thesis-and-design-principles)
-7. [High-Level Architecture](#high-level-architecture)
-8. [End-to-End Lifecycle](#end-to-end-lifecycle)
-9. [Data Contracts and Schemas](#data-contracts-and-schemas)
-10. [Memory Write Path Deep Dive](#memory-write-path-deep-dive)
-11. [Research Path Deep Dive](#research-path-deep-dive)
-12. [Bi-Temporal Semantics and Temporal Filtering](#bi-temporal-semantics-and-temporal-filtering)
-13. [Self-Editing Memory and Conflict Resolution](#self-editing-memory-and-conflict-resolution)
-14. [Hierarchical Tiers and Decay Mechanics](#hierarchical-tiers-and-decay-mechanics)
-15. [Retrieval, Fusion, and Ranking Math](#retrieval-fusion-and-ranking-math)
-16. [Graph Memory and Knowledge Semantics](#graph-memory-and-knowledge-semantics)
-17. [Ingestion Pipeline and Document Processing](#ingestion-pipeline-and-document-processing)
-18. [User Profile Modeling](#user-profile-modeling)
-19. [Maintenance Jobs: Consolidation and Summarization](#maintenance-jobs-consolidation-and-summarization)
-20. [Reliability: Async, Checkpointing, Replay](#reliability-async-checkpointing-replay)
-21. [Evaluation and Testing](#evaluation-and-testing)
-22. [Configuration Reference](#configuration-reference)
-23. [Repository Structure](#repository-structure)
-24. [Quickstart](#quickstart)
-25. [Operational Playbook for Production](#operational-playbook-for-production)
-26. [Performance Tuning Guide](#performance-tuning-guide)
-27. [Known Gaps and Recommended Next Steps](#known-gaps-and-recommended-next-steps)
-28. [FAQ](#faq)
-29. [Additional Documentation in This Repo](#additional-documentation-in-this-repo)
-30. [License](#license)
-31. [Acknowledgments](#acknowledgments)
-32. [Support](#support)
+- [Why MNEMOS](#why-mnemos)
+- [Quick Start](#quick-start)
+- [Core Concepts](#core-concepts)
+  - [Self-Editing Memory](#self-editing-memory)
+  - [Bi-Temporal Model](#bi-temporal-model)
+  - [Hierarchical Tiers & Decay](#hierarchical-tiers--decay)
+- [Architecture](#architecture)
+  - [Dual-Agent Design](#dual-agent-design)
+  - [Research Loop](#research-loop)
+  - [HybridRetriever — 6-Signal Scoring](#hybrid-retriever)
+  - [AdaptiveContextManager](#adaptive-context)
+  - [ECL Pipeline](#ecl-pipeline)
+  - [Graph Memory](#graph-memory)
+- [Interface Reference](#interface-reference)
+- [Configuration](#configuration)
+- [Repository Structure](#repository-structure)
+- [Evaluation & Testing](#evaluation--testing)
+- [Architecture SVGs](#architecture-svgs)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
 
 ---
 
-<a id="installation-and-usage"></a>
-## ðŸ“¦ Installation & Usage
-
-### ðŸŽ¯ For End Users (Quick Start)
+## Quick Start
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install --upgrade pip
-
-# install MNEMOS (editable for local dev)
-pip install -e .
-
-# explicit dependency install (keeps environments reproducible)
-pip install -r requirements.txt
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e . && pip install -r requirements.txt
 ```
-
-Optional sparse retriever dependency:
-
-```bash
-pip install pyserini
-```
-
-Export required environment variables:
 
 ```bash
 export OPENROUTER_API_KEY="..."
 export OPENROUTER_BASE_URL="https://openrouter.ai/api/v1"
-
 export COHERE_API_KEY="..."
-export COHERE_BASE_URL="https://api.cohere.com"
 ```
-
-Optional: local Neo4j (recommended for development)
-
-```bash
-./scripts/neo4j_local_up.sh
-
-export NEO4J_URI="bolt://localhost:7687"
-export NEO4J_USERNAME="neo4j"
-export NEO4J_PASSWORD="mnemos_local_password"
-export NEO4J_DATABASE="neo4j"
-```
-
-Run included examples:
-
-```bash
-python3 examples/quickstart/basic_usage.py
-python3 examples/quickstart/model_usage.py
-python3 examples/quickstart/ttl_usage.py
-```
-
-Run tests (unit + optional live E2E):
-
-```bash
-./scripts/test_all.sh
-```
-
-Optional heavier live stress harness:
-
-```bash
-python3 scripts/e2e_stress_live_test.py
-```
-
-### ðŸ› ï¸ For Developers (Build From Source)
-
-```bash
-# dev tools + evaluation extras
-pip install -e ".[dev,eval]"
-
-# run unit tests
-python3 -m pytest -q
-```
-
----
-
-<a id="configuration"></a>
-## âš™ï¸ Configuration
-
-MNEMOS is environment-first.
-
-Minimum setup:
-
-- Generation: `OPENROUTER_API_KEY` (+ optional `OPENROUTER_BASE_URL`)
-- Embeddings/rerank: `COHERE_API_KEY`
-- Graph memory (optional): `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`, `NEO4J_DATABASE`
-
-For the full configuration surface (including model knobs, retrieval fusion weights, temporal windows, tiering/decay, and graph traversal limits), see:
-
-- [Configuration Reference](#configuration-reference)
-- `mnemos/config/`
-
----
-
-<a id="usage"></a>
-## ðŸš€ Usage
-
-Everything below this point is the deep technical walkthrough: architecture, lifecycle, ranking math, graph semantics, ingestion, reliability, and operational guidance.
-
-If you only want to run it quickly, start with:
-
-- [Installation & Usage](#installation-and-usage)
-- [Quickstart](#quickstart)
-
----
-
-### Visual Identity and Embedded Assets
-
-### Storyboard Frames
-
-All frames below use the same visual language: light background, controlled accent colors, and high-legibility technical composition.
-
-<p align="center">
-  <img src="assets/readme/root_readme_images/01_mnemos_graph_memory_overview.png" alt="MNEMOS frame 1" width="32%" />
-  <img src="assets/readme/root_readme_images/02_mnemos_temporal_validity_panel.png" alt="MNEMOS frame 2" width="32%" />
-  <img src="assets/readme/root_readme_images/03_mnemos_retrieval_fusion_panel.png" alt="MNEMOS frame 3" width="32%" />
-</p>
-
-<p align="center">
-  <img src="assets/readme/root_readme_images/04_mnemos_self_editing_lifecycle.png" alt="MNEMOS frame 4" width="32%" />
-  <img src="assets/readme/root_readme_images/05_mnemos_hierarchical_memory_tiers.png" alt="MNEMOS frame 5" width="32%" />
-  <img src="assets/readme/root_readme_images/06_mnemos_production_readiness_dashboard.png" alt="MNEMOS frame 6" width="32%" />
-</p>
-
-### Animated Architecture SVG Pack
-
-1. System overview  
-![System overview](assets/readme/final_svgs/01_system_overview.svg)
-
-2. Request lifecycle  
-![Request lifecycle](assets/readme/final_svgs/02_request_lifecycle.svg)
-
-3. Memory lifecycle  
-![Memory lifecycle](assets/readme/final_svgs/03_memory_lifecycle.svg)
-
-4. Bi-temporal model  
-![Bi-temporal model](assets/readme/final_svgs/04_bitemporal_model.svg)
-
-5. Retrieval fusion  
-![Retrieval fusion](assets/readme/final_svgs/05_retrieval_fusion.svg)
-
-6. Graph memory 3-tier view  
-![Graph memory 3-tier](assets/readme/final_svgs/06_graph_memory_3tier.svg)
-
-7. Ingestion pipeline  
-![Ingestion pipeline](assets/readme/final_svgs/07_ingestion_pipeline.svg)
-
-8. Capability map  
-![Capability map](assets/readme/final_svgs/08_repo_capabilities_map.svg)
-
----
-
-### System Thesis and Design Principles
-
-### Thesis
-
-Agent memory must be treated as a managed information system, not a passive log.  
-That means every new fact can impact old facts, retrieval must be time-aware, and context assembly must be adaptive under token pressure.
-
-### Design Principles
-
-1. Memory is mutable but auditable.
-   - Updates create versions instead of silent overwrite.
-   - Deletions and supersession are explicit lifecycle states.
-
-2. Time is first-class.
-   - Retrieval must respect validity windows, not just insertion order.
-
-3. Retrieval must be plural.
-   - Sparse handles lexical precision.
-   - Dense handles semantic proximity.
-   - Graph handles relational and associative reasoning.
-
-4. Ranking is compositional, not single-score.
-   - Fusion + tier weighting + reranking + temporal gating.
-
-5. Reasoning is iterative.
-   - Plan, search, integrate, critique, refine.
-
-6. Operational reliability matters.
-   - Checkpoints, async path, replay buffer, file locks, atomic writes.
-
----
-
-### High-Level Architecture
-
-MNEMOS has two core actors:
-
-- `MemoryAgent` for write-time intelligence.
-- `ResearchAgent` for read-time intelligence.
-
-```mermaid
-flowchart LR
-  U[User Query or Document] --> MA[MemoryAgent]
-  U --> RA[ResearchAgent]
-
-  MA --> AMS[(AdvancedMemoryStore)]
-  MA --> PS[(PageStore)]
-  MA --> GMS[(GraphMemoryStore Neo4j)]
-  MA --> UPS[(UserProfileStore)]
-
-  RA --> AMS
-  RA --> PS
-  RA --> RET[Retrievers: keyword/vector/index/graph]
-  RA --> RRF[RRF and dynamic hybrid]
-  RA --> RERANK[Optional Cohere rerank]
-  RA --> CP[CheckpointManager]
-  RA --> ERB[ExperienceReplayBuffer]
-  RA --> OUT[Integrated response with sources]
-```
-
-### Why split write and read intelligence
-
-- Write-time and read-time objectives are different.
-  - Write-time: normalize, compress, version, preserve provenance.
-  - Read-time: maximize question-specific relevance under budget and latency constraints.
-- Separating concerns keeps each path tunable without collapsing into prompt spaghetti.
-
----
-
-### End-to-End Lifecycle
-
-### Write lifecycle
-
-```mermaid
-sequenceDiagram
-  participant Input as Input Text
-  participant MA as MemoryAgent
-  participant AMS as AdvancedMemoryStore
-  participant PS as PageStore
-  participant G as GraphMemoryStore
-  participant P as ProfileAgent
-
-  Input->>MA: memorize(message, meta, user_id)
-  MA->>MA: _decorate() -> abstract, header, decorated page
-  MA->>MA: _decide_operation() -> ADD/UPDATE/DELETE/NOOP
-  MA->>AMS: apply lifecycle op and versioning
-  MA->>PS: persist page + metadata + memory_id
-  MA->>G: upsert memory/entities/relations + 3-tier nodes
-  MA->>MA: _resolve_conflicts() and supersede contradictions
-  MA->>P: optional profile update(user_id, message)
-```
-
-### Research lifecycle
-
-```mermaid
-sequenceDiagram
-  participant Q as User Question
-  participant RA as ResearchAgent
-  participant R as Retrievers
-  participant LLM as Generator
-  participant AMS as AdvancedMemoryStore
-
-  Q->>RA: research(question)
-  RA->>RA: _planning()
-  RA->>R: run tool searches
-  R-->>RA: hits per channel
-  RA->>RA: RRF + dynamic alpha + tier boost + temporal filter
-  RA->>RA: optional rerank
-  RA->>LLM: _integrate(evidence)
-  LLM-->>RA: integrated draft
-  RA->>LLM: _self_rag_reflect()
-  RA->>LLM: _reflection() enough or new_request
-  alt not enough
-    RA->>RA: iterate with refined request
-  end
-  RA->>AMS: optional post_reflection memory write
-  RA-->>Q: final integrated response
-```
-
----
-
-### Data Contracts and Schemas
-
-### Memory contracts
-
-- `MemoryEntry` in `mnemos/schemas/advanced_memory.py`
-- `AdvancedMemoryState`
-- Compatibility bridge to `MemoryState` (`abstracts: List[str]`)
-
-### Page contracts
-
-- `Page` in `mnemos/schemas/page.py`
-- Metadata in pages carries important linkage fields:
-  - `page_id`
-  - `memory_id`
-  - `t_observed`
-  - `t_valid`
-  - `t_invalid`
-  - source/chunk fields from ingestion
-
-### Research contracts
-
-- `SearchPlan` with:
-  - `info_needs`
-  - `tools`
-  - `keyword_collection`
-  - `vector_queries`
-  - `page_index`
-  - `graph_queries`
-- `Hit` with:
-  - `page_id`
-  - `snippet`
-  - `source`
-  - scoring metadata
-- `Result` and `ResearchOutput` for integrated memory and raw iteration trace.
-
----
-
-### Memory Write Path Deep Dive
-
-File: `mnemos/agents/memory_agent.py`
-
-### Step 1: Decorate input
-
-`_decorate(message, memory_state)` builds context from existing memory abstracts and asks the generator to produce a concise abstract for the new message.
-
-Output:
-
-- `abstract`
-- `header`
-- `decorated_new_page`
-
-### Step 2: Decide operation
-
-`_decide_operation(new_abstract, new_message)` calls the model with a structured schema to choose:
-
-- `operation`: `add`, `update`, `delete`, `noop`
-- temporal fields (`t_observed`, `t_valid`, `t_invalid`)
-- tier/importance hint
-- target IDs for updates/deletes
-- extracted entities/relations for graph update
-
-### Step 3: Apply operation
-
-`_apply_memory_operation(...)` translates decision into store actions:
-
-- `add`: new `MemoryEntry` added.
-- `update`: prior entry marked superseded, new version appended.
-- `delete`: target entry marked deleted.
-- `noop`: no new entry.
-
-### Step 4: Persist page
-
-A `Page` is always persisted for traceability, with metadata linking back to memory and temporal hints.
-
-### Step 5: Graph synchronization
-
-If Neo4j is configured:
-
-- Upsert `Memory` node.
-
-- Upsert entity nodes and relation edges.
-
-- Add 3-tier graph artifacts:
-  - `Episode` node for event-level record.
-  - `Semantic` fact nodes from extracted relations or fallback statement.
-  - optional `Community` links from later consolidation/summarization flows.
-
-### Step 6: Conflict resolution
-
-`_resolve_conflicts()`:
-
-- queries graph for nearby related memories
-- checks contradiction via LLM prompt
-- supersedes contradictory old memories (newer observation wins)
-
-### Step 7: Optional profile update
-
-If profile agent is enabled and `user_id` is provided, profile dimensions are updated from the message.
-
----
-
-### Research Path Deep Dive
-
-File: `mnemos/agents/research_agent.py`
-
-### Runtime controls
-
-Constructor supports major switches:
-
-- `enable_hyde`
-- `enable_self_rag`
-- `enable_dynamic_alpha`
-- `enable_reflection_learning`
-- `reranker` and score weighting
-- context pressure controls (`max_context_tokens`, `context_warning_threshold`)
-- checkpointing and replay buffer dependencies
-
-### Planning
-
-`_planning(request, memory_state)` builds a schema-constrained search plan using:
-
-- request text
-- ranked/trimmed memory context
-- optional user profile context
-
-### Search execution
-
-`_search(plan, result, question)`:
-
-1. Runs planned tools.
-2. Optionally adds HyDE-generated pseudo document to vector queries.
-3. Collects per-tool hits and scores.
-4. Computes RRF across channels.
-5. Computes dynamic dense/sparse hybrid score when applicable.
-6. Applies tier and retention multiplier from memory store.
-7. Applies temporal filtering.
-8. Applies optional reranking.
-9. Integrates evidence via LLM.
-
-### Reflection and iterative refinement
-
-Two critics are used:
-
-- Self-RAG critic (`ISREL`, `ISSUP`, `ISUSE`) to validate relevance/support/utility.
-- Sufficiency reflection (`_reflection`) to decide:
-  - `enough=True` -> stop
-  - `enough=False` -> generate next request and continue iteration
-
-### Post-answer learning
-
-When enabled:
-
-- `post_reflection()` writes procedural insight back into long-term memory.
-- replay buffer stores query/retrieval/response/feedback tuples.
-
-### Async path
-
-`research_async(...)` mirrors sync behavior with parallel tool calls and thread offloading for heavy sync functions.
-
----
-
-### Bi-Temporal Semantics and Temporal Filtering
-
-### Why bi-temporal
-
-Two different clocks exist in memory systems:
-
-1. System clock: when your system learned something.
-2. World clock: when that fact is true in the domain.
-
-If you only store one timestamp, you cannot reliably reason about corrections, delayed evidence, or retroactive events.
-
-### Temporal fields in practice
-
-| Field | Meaning |
-|---|---|
-| `t_created` | When MNEMOS persisted the memory |
-| `t_observed` | When evidence was observed/recorded |
-| `t_valid` | Start of factual validity window |
-| `t_invalid` | End of factual validity window |
-| `t_expired` | Internal lifecycle expiry timestamp |
-
-### Retrieval-time temporal gating
-
-`_filter_temporal_hits()` drops hits when:
-
-- `t_valid` is in the future (not yet valid).
-- `t_invalid` is in the past or now (already invalid).
-
-Result:
-
-- historical traces stay in storage,
-- but stale facts do not pollute active reasoning.
-
----
-
-### Self-Editing Memory and Conflict Resolution
-
-### Why append-only fails
-
-Append-only memory silently accumulates contradictions. Retrieval then randomly surfaces old and new facts together.
-
-### MNEMOS lifecycle strategy
-
-- Every write has an explicit operation decision.
-- Updates create new versions and supersede old entries.
-- Deletions preserve record lineage via state transitions.
-- No-op avoids memory inflation from duplicate statements.
-
-### Conflict policy
-
-Conflict resolution uses:
-
-1. graph neighborhood lookup for related memories,
-2. contradiction classification prompt,
-3. supersede old memory with `t_invalid = new.t_observed` on conflict.
-
-This yields deterministic state transitions even when input stream is noisy.
-
----
-
-### Hierarchical Tiers and Decay Mechanics
-
-File: `mnemos/schemas/advanced_memory.py`
-
-### Tiers
-
-- `short`: recent or unproven value
-- `mid`: reinforced and retained
-- `long`: durable and high-value
-
-### Promotion and demotion
-
-Promotion depends on combinations of:
-
-- age
-- strength (recall reinforcement)
-
-Demotion depends on:
-
-- inactivity
-- retention score under configured thresholds
-
-### Decay model
-
-Retention score:
-
-`R = exp(-t / S)`
-
-where:
-
-- `t` is time since last access (in days)
-- `S` is memory strength
-
-This keeps repeatedly useful memories alive and naturally fades cold ones.
-
-### Cleanup behavior
-
-`cleanup_expired()` marks and purges non-active records to avoid unbounded memory growth.
-
----
-
-### Retrieval, Fusion, and Ranking Math
-
-### Retrieval channels
-
-- Keyword search:
-  - BM25 (Pyserini/Lucene), file `mnemos/retriever/bm25.py`
-- Dense semantic search:
-  - Cohere embeddings + FAISS, file `mnemos/retriever/cohere_dense.py`
-- Page index lookup:
-  - direct index path, file `mnemos/retriever/index_retriever.py`
-- Graph retrieval:
-  - graph queries + PPR mode, file `mnemos/retriever/graph_retriever.py`
-
-### Fusion strategy
-
-Reciprocal Rank Fusion per item:
-
-`RRF(item) = sum(1 / (k + rank_i + 1))`
-
-where `i` iterates retrieval channels.
-
-### Dynamic hybrid score
-
-For query-dependent dense/sparse blending:
-
-`Hybrid = alpha * dense + (1 - alpha) * sparse`
-
-`alpha` is heuristic from query traits:
-
-- short, lexical, symbol-heavy query -> lower alpha
-- long semantic query -> higher alpha
-
-### Tier and retention boost
-
-Base score is multiplied by memory quality:
-
-`Boosted = BaseScore * TierWeight * Retention`
-
-with default tier weights:
-
-- long: 1.5
-- mid: 1.2
-- short: 1.0
-
-### Optional reranking
-
-Cohere reranker score is merged with fused score:
-
-`Final = Boosted + rerank_weight * rerank_score`
-
----
-
-### Graph Memory and Knowledge Semantics
-
-Files:
-
-- `mnemos/graph/graph_store.py`
-- `mnemos/graph/ontology.py`
-- `mnemos/graph/utils.py`
-
-### Node inventory
-
-- `Memory`
-- `Entity`
-- `Episode`
-- `Semantic`
-- `Community`
-
-### Edge inventory
-
-- `MENTIONS`
-- `RELATION` (with semantic type in relationship property)
-- `HAS_EPISODE`
-- `HAS_SEMANTIC`
-- `HAS_COMMUNITY`
-- `HAS_MEMBER`
-- `DERIVES`
-- version/provenance edges (`UPDATES`, `EXTENDS`)
-
-### Graph CRUD surface
-
-Entity operations:
-
-- `upsert_entity`
-- `delete_entity`
-
-Relation operations:
-
-- `upsert_relation`
-- `delete_relation`
-
-Memory graph object operations:
-
-- `delete_memory`
-- `delete_episode`
-- `delete_semantic`
-- `delete_community`
-
-### Associative retrieval via Personalized PageRank
-
-`personalized_pagerank(entity_names, damping, depth, max_iter, limit)`:
-
-1. Builds a bounded subgraph around seed entities.
-2. Propagates probability mass from seed set.
-3. Ranks memory nodes by converged scores.
-4. Returns active memory hits with scores.
-
-This is especially useful for multi-hop association where keyword/dense retrieval misses latent relational paths.
-
----
-
-### Ingestion Pipeline and Document Processing
-
-File: `mnemos/ingestion/pipeline.py`
-
-### Ingestion capabilities
-
-- loader fan-in (`ingest_loaders`)
-- chunking abstraction via `BaseChunker`
-- deduplication by SHA256 content hash
-- metadata propagation to page records
-- direct handoff into `MemoryAgent.memorize()`
-
-### Supported loader classes
-
-From `mnemos/ingestion/loaders.py`:
-
-- `TextFileLoader`
-- `DirectoryLoader`
-- `URLLoader`
-- `JSONLLoader`
-- `S3Loader`
-- `NotionLoader`
-- `GDriveLoader`
-
-### Why this matters
-
-High-quality memory is mostly an ingestion problem:
-
-- stable chunking
-- deterministic metadata
-- dedup controls
-- source traceability
-
-If this layer is weak, downstream retrieval quality collapses regardless of model quality.
-
----
-
-### User Profile Modeling
-
-Files:
-
-- `mnemos/profile/profile_agent.py`
-- `mnemos/profile/profile_store.py`
-
-### Profile shape
-
-- `static`: durable personal facts/preferences
-- `dynamic`: short-horizon situational signals
-- `traits`: long-horizon behavior descriptors
-
-### Update path
-
-`UserProfileAgent.update_profile(user_id, message)`:
-
-1. prompts model for structured updates
-2. merges updates into persisted per-user JSON profile
-3. profile context can be injected into planning context by `ResearchAgent`
-
-This enables better personalization without polluting global memory graph semantics.
-
----
-
-### Maintenance Jobs: Consolidation and Summarization
-
-### Memory consolidation
-
-File: `mnemos/maintenance/consolidation.py`
-
-Flow:
-
-1. collect active short-term entries
-2. embed with Cohere
-3. cluster by similarity threshold
-4. summarize cluster into merged mid-tier entry
-5. supersede source entries
-
-Purpose:
-
-- reduce redundancy
-- preserve signal density
-- keep retrieval context budget healthy
-
-### Hierarchical summarization (RAPTOR-style)
-
-File: `mnemos/summarization/raptor.py`
-
-Flow:
-
-- Level 0: raw entries
-- Level 1: cluster summaries
-- Level 2: summary of summaries
-- Level 3: global summary node
-
-Purpose:
-
-- long-context compression
-- topic hierarchy formation
-- cheap high-level recall for planning context
-
----
-
-### Reliability: Async, Checkpointing, Replay
-
-### Async execution
-
-- `research_async()` supports async orchestration for multi-tool retrieval paths.
-
-### Checkpointing
-
-File: `mnemos/utils/checkpoint.py`
-
-Capabilities:
-
-- save state by thread/checkpoint id
-- load state for resume
-- list and delete checkpoints
-- atomic JSON persistence with lock files
-
-### Replay buffer
-
-File: `mnemos/learning/replay_buffer.py`
-
-Capabilities:
-
-- append experience tuples
-- sample mini-batches for offline analysis or future continual-learning loops
-
----
-
-### Evaluation and Testing
-
-### Evaluation entrypoints
-
-- `eval/run.py` provides task dispatch CLI behavior.
-- `eval/ragas_eval.py` re-exports evaluator wrapper.
-- `mnemos/evaluation/ragas_eval.py` contains evaluator implementation.
-
-If installed through package entrypoints:
-
-```bash
-mnemos-eval --help
-mnemos-eval hotpotqa --help
-mnemos-eval locomo --help
-mnemos-eval narrativeqa --help
-mnemos-eval ruler --help
-```
-
-### Current test suite in repo
-
-TTL-focused tests are present:
-
-- `tests/test_ttl_memory.py`
-- `tests/test_ttl_page.py`
-- `tests/test_ttl_standalone.py`
-- `tests/test_ttl_before_after.py`
-- `tests/run_ttl_tests.py`
-
-Run all:
-
-```bash
-python3 -m pytest tests -v
-```
-
-### What to add next for stronger production confidence
-
-Recommended additional test layers:
-
-1. Contract tests for `MemoryAgent` operation decisions.
-2. Temporal filtering tests over synthetic time windows.
-3. Graph CRUD and PPR regression tests with seeded Neo4j test db.
-4. End-to-end retrieval fusion tests with deterministic fixture corpora.
-5. Async checkpoint resume tests under interrupted run simulation.
-
----
-
-### Configuration Reference
-
-Environment variables discovered from implementation:
-
-| Variable | Used in | Purpose |
-|---|---|---|
-| `OPENROUTER_API_KEY` | generator | OpenRouter auth key |
-| `OPENROUTER_BASE_URL` | generator | OpenRouter base URL |
-| `OPENAI_API_KEY` | generator fallback | OpenAI-compatible auth fallback |
-| `OPENAI_BASE_URL` | generator fallback | OpenAI-compatible base URL fallback |
-| `COHERE_API_KEY` | dense/rerank/summarization/consolidation | Cohere auth key |
-| `COHERE_BASE_URL` | dense/rerank | Cohere base URL |
-| `COHERE_EMBED_MODEL` | dense retriever | embedding model id |
-| `COHERE_EMBED_INPUT_TYPE_DOC` | dense retriever | doc embedding input type |
-| `COHERE_EMBED_INPUT_TYPE_QUERY` | dense retriever | query embedding input type |
-| `COHERE_RERANK_MODEL` | reranker | rerank model id |
-| `NEO4J_URI` | memory/research auto graph wiring | Neo4j URI |
-| `NEO4J_USERNAME` | memory/research auto graph wiring | Neo4j username |
-| `NEO4J_PASSWORD` | memory/research auto graph wiring | Neo4j password |
-| `NEO4J_DATABASE` | memory/research auto graph wiring | Neo4j database name |
-| `GRAPH_ENTITY_TYPES` | ontology loader | allow-list entity types |
-| `GRAPH_RELATION_TYPES` | ontology loader | allow-list relation types |
-| `GRAPH_ALLOW_UNKNOWN` | ontology loader | unknown type behavior |
-
-### Core constructor knobs worth tuning
-
-`ResearchAgent`:
-
-- `max_iters`
-- `rrf_k`
-- `rerank_top_n`
-- `rerank_weight`
-- `enable_hyde`
-- `enable_self_rag`
-- `enable_dynamic_alpha`
-- `enable_reflection_learning`
-- `max_context_tokens`
-- `context_warning_threshold`
-
-`AdvancedMemoryStore`:
-
-- `ttl_seconds`
-- `retention_threshold`
-- promotion thresholds (`short_to_mid_*`, `mid_to_long_*`)
-- demotion controls
-
----
-
-### Repository Structure
-
-```text
-.
-|-- assets/
-|   |-- README.md
-|   |-- logo.png
-|   `-- readme/
-|       |-- final_svgs/
-|       |-- folder_svgs/
-|       |-- mnemos_package_images/
-|       |-- mnemos_package_svgs/
-|       |-- root_readme_images/
-|       |-- theme_samples/
-|       `-- theme_samples_light/
-|-- download_data/
-|-- docker-compose.neo4j.yml
-|-- eval/
-|-- examples/
-|   `-- quickstart/
-|-- mnemos/
-|   |-- agents/
-|   |-- config/
-|   |-- evaluation/
-|   |-- generator/
-|   |-- graph/
-|   |-- ingestion/
-|   |-- learning/
-|   |-- maintenance/
-|   |-- profile/
-|   |-- prompts/
-|   |-- retriever/
-|   |-- schemas/
-|   |-- summarization/
-|   `-- utils/
-|-- LICENSE
-|-- pyproject.toml
-|-- requirements.txt
-|-- scripts/
-|-- tests/
-|-- setup.py
-`-- README.md
-```
-
----
-
-### Quickstart
-
-### 1) Create virtual environment
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install --upgrade pip
-```
-
-### 2) Install package and dependencies
-
-Install the package and dependencies:
-
-```bash
-pip install -e .
-pip install -r requirements.txt
-```
-
-Optional sparse retriever dependency:
-
-```bash
-pip install pyserini
-```
-
-### 3) Export environment variables
-
-```bash
-export OPENROUTER_API_KEY="..."
-export OPENROUTER_BASE_URL="https://openrouter.ai/api/v1"
-
-export COHERE_API_KEY="..."
-export COHERE_BASE_URL="https://api.cohere.com"
-
-export NEO4J_URI="neo4j+s://<instance>.databases.neo4j.io"
-export NEO4J_USERNAME="neo4j"
-export NEO4J_PASSWORD="..."
-export NEO4J_DATABASE="neo4j"
-```
-
-Optional: local Neo4j (recommended for development)
-
-```bash
-./scripts/neo4j_local_up.sh
-```
-
-Then point MNEMOS at your local graph:
-
-```bash
-export NEO4J_URI="bolt://localhost:7687"
-export NEO4J_USERNAME="neo4j"
-export NEO4J_PASSWORD="mnemos_local_password"  # default local password; override via NEO4J_PASSWORD
-export NEO4J_DATABASE="neo4j"
-```
-
-Stop local Neo4j:
-
-```bash
-./scripts/neo4j_local_down.sh
-```
-
-### 4) Minimal end-to-end example
 
 ```python
-import os
 from mnemos import (
-    MemoryAgent,
-    ResearchAgent,
-    OpenAIGenerator,
-    OpenAIGeneratorConfig,
-    AdvancedMemoryStore,
-    InMemoryPageStore,
-    IndexRetriever,
-    IndexRetrieverConfig,
-    BM25Retriever,
-    BM25RetrieverConfig,
-    CohereDenseRetriever,
-    CohereEmbedRetrieverConfig,
-    CohereReranker,
-    CohereRerankerConfig,
+    MemoryAgent, ResearchAgent, OpenAIGenerator,
+    OpenAIGeneratorConfig, AdvancedMemoryStore, InMemoryPageStore,
+    IndexRetriever, IndexRetrieverConfig,
 )
+import os
 
-generator = OpenAIGenerator.from_config(
-    OpenAIGeneratorConfig(
-        model_name="google/gemini-3-flash-preview",
-        api_key=os.getenv("OPENROUTER_API_KEY"),
-        base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
-        temperature=0.0,
-        max_tokens=512,
-    )
-)
+# Generator
+generator = OpenAIGenerator.from_config(OpenAIGeneratorConfig(
+    model_name="google/gemini-3-flash-preview",
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    base_url="https://openrouter.ai/api/v1",
+))
 
+# Stores
 memory_store = AdvancedMemoryStore()
 page_store = InMemoryPageStore()
 
-memory_agent = MemoryAgent(
-    generator=generator,
-    memory_store=memory_store,
-    page_store=page_store,
+# Write memories
+agent = MemoryAgent(generator=generator, memory_store=memory_store, page_store=page_store)
+result = agent.memorize("The project deadline is March 15th.", memory_store, page_store)
+memory_id = result.new_page.meta.get("memory_id")
+
+# Research (retrieve + reason)
+retriever = IndexRetriever(IndexRetrieverConfig(index_dir="./index").__dict__)
+retriever.build(page_store)
+researcher = ResearchAgent(
+    page_store=page_store, memory_store=memory_store,
+    retrievers={"idx": retriever}, generator=generator,
 )
-
-memory_agent.memorize("Alice moved to Berlin in 2024.", user_id="alice")
-memory_agent.memorize("Alice now works at Orbital Systems as an engineer.", user_id="alice")
-memory_agent.memorize("Alice previously worked at Nova Labs.", user_id="alice")
-
-retrievers = {}
-
-index_retriever = IndexRetriever(IndexRetrieverConfig(index_dir="./index/index").__dict__)
-index_retriever.build(page_store)
-retrievers["page_index"] = index_retriever
-
-try:
-    bm25_retriever = BM25Retriever(BM25RetrieverConfig(index_dir="./index/bm25").__dict__)
-    bm25_retriever.build(page_store)
-    retrievers["keyword"] = bm25_retriever
-except Exception as e:
-    print("BM25 disabled:", e)
-
-try:
-    dense_retriever = CohereDenseRetriever(
-        CohereEmbedRetrieverConfig(
-            index_dir="./index/cohere_dense",
-            api_key=os.getenv("COHERE_API_KEY"),
-        ).__dict__
-    )
-    dense_retriever.build(page_store)
-    retrievers["vector"] = dense_retriever
-except Exception as e:
-    print("Dense disabled:", e)
-
-reranker = None
-try:
-    reranker = CohereReranker(CohereRerankerConfig(api_key=os.getenv("COHERE_API_KEY")).__dict__)
-except Exception as e:
-    print("Reranker disabled:", e)
-
-research_agent = ResearchAgent(
-    page_store=page_store,
-    memory_store=memory_store,
-    retrievers=retrievers,
-    generator=generator,
-    reranker=reranker,
-    max_iters=3,
-    enable_hyde=True,
-    enable_self_rag=True,
-    enable_dynamic_alpha=True,
-    enable_reflection_learning=True,
-)
-
-out = research_agent.research(
-    request="Where does Alice work now, and what changed compared to before?",
-    user_id="alice",
-)
-
-print(out.integrated_memory)
-print(out.raw_memory.keys())
+answer = researcher.research("When is the project deadline?")
+print(answer.answer)
 ```
 
-### 5) Run included examples
+More examples in [`examples/quickstart/`](examples/quickstart/).
 
-```bash
-python3 examples/quickstart/basic_usage.py
-python3 examples/quickstart/model_usage.py
-python3 examples/quickstart/ttl_usage.py
+---
+
+## Core Concepts
+
+<a id="self-editing-memory"></a>
+### Self-Editing Memory
+
+Every `memorize()` call evaluates against existing state and picks one of four actions:
+
+| Action | When | Effect |
+|:---|:---|:---|
+| **ADD** | New fact, no conflict | Creates a new memory entry |
+| **UPDATE** | Same entity, newer information | Supersedes old version, preserves history |
+| **DELETE** | Contradiction detected | Soft-deletes old entry, marks `t_invalid` |
+| **NOOP** | Duplicate or irrelevant | No change to memory state |
+
+This eliminates the "append-only rot" problem. Stale facts are actively retired.
+
+<p align="center">
+  <img src="assets/readme/final_svgs/03_memory_lifecycle.svg" alt="Memory Lifecycle" width="100%"/>
+</p>
+
+<a id="bi-temporal-model"></a>
+### Bi-Temporal Model
+
+Every memory carries five temporal coordinates:
+
+```
+t_created   — when the memory was first stored
+t_observed  — when the underlying fact was observed in the world
+t_valid     — start of the fact's validity window
+t_invalid   — end of the fact's validity window (null = still valid)
+t_expired   — when the memory was superseded or deleted
 ```
 
-### 6) Run tests (unit + optional live E2E)
+This enables **as-of queries**: "What did the system believe about X at time T?" — critical for auditing, debugging, and temporal consistency.
+
+<p align="center">
+  <img src="assets/readme/final_svgs/04_bitemporal_model.svg" alt="Bi-Temporal Model" width="100%"/>
+</p>
+
+### Hierarchical Tiers & Decay
+
+Memories exist in three tiers, inspired by human memory consolidation:
+
+| Tier | Retention | Boost | Promotion Trigger |
+|:---|:---|:---|:---|
+| **Short** | Hours–days | 1.0× | Auto on creation |
+| **Mid** | Days–weeks | 1.2× | Repeated access / high salience |
+| **Long** | Weeks–months | 1.4× | Consolidation job (sleep cycle) |
+
+Decay follows `exp(-λ · days_old)` with configurable λ. The `SleepConsolidationJob` runs periodic maintenance to promote/demote memories and clean expired entries.
+
+---
+
+## Architecture
+
+<a id="dual-agent-design"></a>
+### Dual-Agent Design
+
+MNEMOS uses two specialized agents:
+
+```
+┌─────────────────┐         ┌──────────────────┐
+│   MemoryAgent   │         │  ResearchAgent   │
+│                 │         │                  │
+│ • memorize()    │────────▶│ • research()     │
+│ • ADD/UPD/DEL   │ memory  │ • plan → search  │
+│ • provenance    │  store  │ • integrate      │
+│ • versioning    │◀────────│ • reflect loop   │
+└─────────────────┘         └──────────────────┘
+        │                           │
+        ▼                           ▼
+  AdvancedMemoryStore        HybridRetriever
+  InMemoryPageStore          AdaptiveContextManager
+  GraphMemoryStore           CohereReranker
+```
+
+- **MemoryAgent** — writes structured memories with self-editing lifecycle, version history, and provenance tracking.
+- **ResearchAgent** — multi-iteration retrieval-augmented generation with plan → search → integrate → reflect loop.
+
+<p align="center">
+  <img src="assets/readme/final_svgs/02_request_lifecycle.svg" alt="Request Lifecycle" width="100%"/>
+</p>
+
+<a id="research-loop"></a>
+### Research Loop
+
+The ResearchAgent doesn't do one-shot retrieval. It runs an iterative loop:
+
+```
+ ┌──────────────────────────────────────────────┐
+ │                                              │
+ │    PLAN ──▶ SEARCH ──▶ INTEGRATE ──▶ REFLECT │
+ │     ▲                                  │     │
+ │     └──────── not enough? ◀────────────┘     │
+ │                                              │
+ │              enough? ──▶ ANSWER              │
+ └──────────────────────────────────────────────┘
+```
+
+Each iteration refines the search plan based on what was found (or not found). Supports optional **HyDE** (hypothetical document embeddings) and **Self-RAG** (self-reflective retrieval).
+
+---
+
+<a id="hybrid-retriever"></a>
+### HybridRetriever — 6-Signal Scoring
+
+*Inspired by [MemTier (arXiv:2605.03675)](https://arxiv.org/abs/2605.03675)*
+
+The HybridRetriever scores every memory against six normalized signals:
+
+```
+S(q, m) = 0.20·φ_sem + 0.30·φ_bm25 + 0.15·φ_graph + 0.15·φ_decay + 0.10·φ_cw + 0.10·φ_tier
+```
+
+| Signal | Weight | Source | Description |
+|:---|:---:|:---|:---|
+| **φ_sem** | 0.20 | Dense embeddings | Cosine similarity via Cohere/BGEM3, min-max normalized |
+| **φ_bm25** | 0.30 | Lexical index | BM25 keyword scoring — highest weight for precision |
+| **φ_graph** | 0.15 | Neo4j PPR | Personalized PageRank over entity-relation neighborhoods |
+| **φ_decay** | 0.15 | Temporal | `exp(-λ·days)` with BM25 bypass for high-scoring lexical hits |
+| **φ_cw** | 0.10 | Cognitive | `0.6×salience + 0.4×FSRS_strength` (emotional + spaced rep.) |
+| **φ_tier** | 0.10 | Memory tier | Short=1.0×, Mid=1.2×, Long=1.4× (rewards consolidation) |
+
+All weights are configurable via `HybridRetrieverConfig`. The retriever implements `AbsRetriever` and is a drop-in replacement anywhere retrievers are used.
+
+<p align="center">
+  <img src="assets/readme/final_svgs/09_hybrid_6signal_scoring.svg" alt="6-Signal Hybrid Scoring Engine" width="100%"/>
+</p>
+
+<a id="adaptive-context"></a>
+### AdaptiveContextManager
+
+*MemTier shows k=2 entries at 300-600 tokens outperforms larger retrieval budgets.*
+
+The AdaptiveContextManager packs the highest-scored memories into a strict token budget:
+
+| Stage | What It Does |
+|:---|:---|
+| **Measure** | Exact token count via tiktoken (`cl100k_base`) — replaces naive `len//4` |
+| **Dedup** | Character trigram Jaccard similarity (threshold 0.60) skips near-duplicates |
+| **Pack** | Greedy best-first by retrieval score until budget exhausted |
+| **Compress** | LLM distillation fallback when candidates exceed 1.5× budget |
+
+```python
+from mnemos import AdaptiveContextManager, ContextManagerConfig
+
+ctx = AdaptiveContextManager(
+    max_tokens=2000,               # token budget
+    tiktoken_model="cl100k_base",  # precise counting
+    generator=generator,           # for compression fallback
+    dedup_threshold=0.60,          # trigram Jaccard threshold
+)
+context_str = ctx.pack(hits, memory_store, profile_context="Senior engineer")
+```
+
+<p align="center">
+  <img src="assets/readme/final_svgs/10_adaptive_context_manager.svg" alt="Adaptive Context Manager" width="100%"/>
+</p>
+
+<a id="ecl-pipeline"></a>
+### ECL Pipeline — Extract, Cognify, Load
+
+*Inspired by [Cognee](https://github.com/topoteretes/cognee)'s ECL architecture.*
+
+The ECLPipeline enriches every memory at write-time with cognitive metadata:
+
+| Phase | What Happens |
+|:---|:---|
+| **Extract** | Parse raw input via loaders (Text, URL, S3, Notion, GDrive...) + chunking with SHA-256 dedup |
+| **Cognify** | Score emotional salience (0.0–1.0), initialize FSRS baselines (stability, difficulty, next_review) |
+| **Load** | Commit enriched chunks to memory via `memorize()` — atomic write to all stores |
+
+```python
+from mnemos import ECLPipeline, EmotionalSalienceScorer, SpacedRepetitionScheduler
+
+pipeline = ECLPipeline(
+    salience_scorer=EmotionalSalienceScorer(generator=generator),
+    scheduler=SpacedRepetitionScheduler(),
+)
+results = pipeline.ingest(loader=my_loader, agent=memory_agent,
+                          memory_store=memory_store, page_store=page_store)
+```
+
+Both cognitive enrichments are optional — omit them for backward-compatible basic ingestion.
+
+<p align="center">
+  <img src="assets/readme/final_svgs/11_ecl_pipeline.svg" alt="ECL Pipeline" width="100%"/>
+</p>
+
+<a id="graph-memory"></a>
+### Graph Memory
+
+Neo4j-backed knowledge graph with three entity tiers:
+
+| Tier | What It Stores | Traversal |
+|:---|:---|:---|
+| **Episode** | Raw observations with temporal bounds | Direct lookup |
+| **Semantic Fact** | Extracted entity-relation-entity triples | Neighborhood expansion |
+| **Community** | Summarized clusters of related facts | PPR (Personalized PageRank) |
+
+The `GraphRetriever` performs entity-seeded neighborhood expansion with configurable depth and max nodes. Provenance edges link every fact back to its source episode.
+
+<p align="center">
+  <img src="assets/readme/final_svgs/06_graph_memory_3tier.svg" alt="3-Tier Graph Memory" width="100%"/>
+</p>
+
+---
+
+## Interface Reference
+
+### MemoryAgent
+
+| Method | Signature | Returns |
+|:---|:---|:---|
+| `memorize` | `(text, memory_store, page_store) → MemoryUpdate` | `.new_state`, `.new_page`, `.debug` |
+
+Access the memory ID via `result.new_page.meta.get("memory_id")`.
+
+### ResearchAgent
+
+| Method | Signature | Returns |
+|:---|:---|:---|
+| `research` | `(query) → ResearchOutput` | `.answer`, `.evidence`, `.iterations` |
+
+### AdvancedMemoryStore
+
+| Method | Description |
+|:---|:---|
+| `get_entries()` | All active memory entries |
+| `get_entry_by_id(id)` | Single entry lookup |
+| `add_entry(entry)` | Append new entry |
+| `delete_entry(id)` | Soft delete (sets `t_expired`) |
+| `hard_delete_entry(id)` | GDPR Article 17 permanent erasure |
+| `get_version_history(id)` | Full version chain |
+| `query_as_of(timestamp)` | Bi-temporal point-in-time query |
+| `touch(id)` | Update access time (affects decay) |
+| `cleanup_expired()` | Remove entries past retention window |
+| `promote_demote()` | Tier transitions based on access patterns |
+
+### HybridRetriever (AbsRetriever)
+
+| Method | Description |
+|:---|:---|
+| `search(query_list, top_k)` | 6-signal scored retrieval → `List[List[Hit]]` |
+| `build(page_store)` | Initialize sub-retrievers |
+| `load(page_store)` | Load from persisted indexes |
+| `update(page_store)` | Incremental index update |
+
+### Hit Schema
+
+```python
+Hit(page_id, snippet, source, meta)
+# meta dict contains per-signal scores:
+# {"sem_score": 0.87, "bm25_score": 1.4, "graph_score": 0.5, ...}
+```
+
+---
+
+## Configuration
+
+MNEMOS is environment-first. Minimum setup:
+
+| Variable | Purpose |
+|:---|:---|
+| `OPENROUTER_API_KEY` | LLM generation (required) |
+| `OPENROUTER_BASE_URL` | API endpoint (default: openrouter.ai) |
+| `COHERE_API_KEY` | Embeddings + reranking |
+| `NEO4J_URI` | Graph memory (optional) |
+| `NEO4J_USERNAME` / `NEO4J_PASSWORD` | Neo4j auth |
+
+### Config Dataclasses
+
+All configuration lives in `mnemos/config/`:
+
+| Config | Key Parameters |
+|:---|:---|
+| `OpenAIGeneratorConfig` | `model_name`, `api_key`, `base_url`, `temperature`, `max_tokens` |
+| `HybridRetrieverConfig` | `weights` (6-signal dict), `decay_lambda`, `decay_bypass_threshold`, `top_k` |
+| `ContextManagerConfig` | `max_tokens`, `tiktoken_model`, `dedup_threshold` |
+| `IndexRetrieverConfig` | `index_dir` |
+| `CohereEmbedRetrieverConfig` | `model_name`, `api_key` |
+| `CohereRerankerConfig` | `model_name`, `top_n` |
+| `DenseRetrieverConfig` | `model_name`, `batch_size` |
+| `BM25RetrieverConfig` | `index_dir`, `k1`, `b` |
+
+---
+
+## Repository Structure
+
+```
+mnemos/
+├── agents/              # MemoryAgent + ResearchAgent
+├── affect/              # EmotionalSalienceScorer, FadingAffectModel
+├── cloud/               # Multi-tenant support
+├── config/              # All config dataclasses
+├── evaluation/          # RAGAS evaluator integration
+├── generator/           # OpenAI, vLLM generator backends
+├── graph/               # Neo4j GraphMemoryStore, ontology
+├── ingestion/           # Loaders, chunkers, IngestionPipeline, ECLPipeline
+├── integrations/        # LangChain adapter
+├── learning/            # Experience replay buffer
+├── maintenance/         # SleepConsolidationJob, MemoryConsolidator
+├── mcp/                 # Model Context Protocol server
+├── modalities/          # Image memory processing
+├── multi_agent/         # Multi-agent coordination
+├── privacy/             # GDPR erasure engine, audit logging
+├── profile/             # UserProfile modeling + agent
+├── prompts/             # Prompt templates
+├── reinforcement/       # FSRS spaced repetition scheduler
+├── retriever/           # Index, BM25, Dense, Graph, Hybrid, ContextManager
+├── schemas/             # MemoryEntry, Page, Hit, AdvancedMemoryStore
+├── server/              # FastAPI server + Prometheus metrics
+├── summarization/       # Hierarchical summarizer
+└── utils/               # Checkpoint manager, helpers
+
+examples/quickstart/     # basic_usage.py, model_usage.py, ttl_usage.py
+eval/                    # Evaluation entrypoints
+tests/                   # Unit + integration tests
+scripts/                 # run_maintenance.py, e2e_stress, neo4j_local_up
+dashboard/               # Streamlit observability dashboard
+assets/readme/           # SVG architecture diagrams + PNG frames
+```
+
+---
+
+## Evaluation & Testing
 
 ```bash
+# Unit tests
+python3 -m pytest -q
+
+# Full test suite (unit + optional live E2E)
 ./scripts/test_all.sh
-```
 
-Optional heavier live stress harness:
-
-```bash
+# Stress test (requires API keys)
 python3 scripts/e2e_stress_live_test.py
+
+# Install dev + eval extras
+pip install -e ".[dev,eval]"
+```
+
+Optional Neo4j for graph memory testing:
+```bash
+./scripts/neo4j_local_up.sh
 ```
 
 ---
 
-### Operational Playbook for Production
+## Architecture SVGs
 
-### Deployment profiles
+Full animated architecture diagrams (1600×900, Inter font, teal/amber theme):
 
-Local development profile:
+<details>
+<summary><b>System Overview</b></summary>
+<p align="center"><img src="assets/readme/final_svgs/01_system_overview.svg" alt="System Overview" width="100%"/></p>
+</details>
 
-- OpenRouter for generation.
-- Cohere for embeddings/reranking.
-- local or Aura Neo4j.
-- filesystem stores for memory, pages, profiles, checkpoints.
+<details>
+<summary><b>Request Lifecycle</b></summary>
+<p align="center"><img src="assets/readme/final_svgs/02_request_lifecycle.svg" alt="Request Lifecycle" width="100%"/></p>
+</details>
 
-Cloud production profile:
+<details>
+<summary><b>Memory Lifecycle</b></summary>
+<p align="center"><img src="assets/readme/final_svgs/03_memory_lifecycle.svg" alt="Memory Lifecycle" width="100%"/></p>
+</details>
 
-- managed Neo4j Aura.
-- externalized storage for artifacts/checkpoints.
-- key vault for secrets.
-- observability layer around latency and retrieval quality.
+<details>
+<summary><b>Bi-Temporal Model</b></summary>
+<p align="center"><img src="assets/readme/final_svgs/04_bitemporal_model.svg" alt="Bi-Temporal Model" width="100%"/></p>
+</details>
 
-### Suggested observability metrics
+<details>
+<summary><b>Retrieval Fusion Pipeline</b></summary>
+<p align="center"><img src="assets/readme/final_svgs/05_retrieval_fusion.svg" alt="Retrieval Fusion" width="100%"/></p>
+</details>
 
-Memory quality:
+<details>
+<summary><b>3-Tier Graph Memory</b></summary>
+<p align="center"><img src="assets/readme/final_svgs/06_graph_memory_3tier.svg" alt="Graph Memory" width="100%"/></p>
+</details>
 
-- operation distribution (`add/update/delete/noop`)
-- conflict supersede count
-- active vs expired memory counts
-- tier distribution over time
+<details>
+<summary><b>Ingestion Pipeline</b></summary>
+<p align="center"><img src="assets/readme/final_svgs/07_ingestion_pipeline.svg" alt="Ingestion Pipeline" width="100%"/></p>
+</details>
 
-Retrieval quality:
+<details>
+<summary><b>Repository Capabilities Map</b></summary>
+<p align="center"><img src="assets/readme/final_svgs/08_repo_capabilities_map.svg" alt="Capabilities Map" width="100%"/></p>
+</details>
 
-- per-channel hit contribution
-- average RRF spread
-- reranker impact delta
-- temporal filter drop-rate
+<details>
+<summary><b>HybridRetriever — 6-Signal Scoring</b></summary>
+<p align="center"><img src="assets/readme/final_svgs/09_hybrid_6signal_scoring.svg" alt="6-Signal Scoring" width="100%"/></p>
+</details>
 
-Runtime:
+<details>
+<summary><b>AdaptiveContextManager</b></summary>
+<p align="center"><img src="assets/readme/final_svgs/10_adaptive_context_manager.svg" alt="Context Manager" width="100%"/></p>
+</details>
 
-- p50/p95 planning latency
-- p50/p95 retrieval latency by channel
-- p50/p95 integration latency
-- iteration count distribution
-- checkpoint resume success rate
+<details>
+<summary><b>ECL Pipeline</b></summary>
+<p align="center"><img src="assets/readme/final_svgs/11_ecl_pipeline.svg" alt="ECL Pipeline" width="100%"/></p>
+</details>
 
-### Data governance checklist
+<details>
+<summary><b>Package Architecture (mnemos/ internals)</b></summary>
+<p align="center"><img src="assets/readme/mnemos_package_svgs/01_package_architecture.svg" alt="Package Architecture" width="100%"/></p>
+</details>
 
-- never log raw secrets
-- redact PII from telemetry payloads
-- protect profile files and checkpoint files
-- encrypt persistent stores where required
-- implement retention policy for profile and replay artifacts
+<details>
+<summary><b>Memory Write Sequence</b></summary>
+<p align="center"><img src="assets/readme/mnemos_package_svgs/02_memory_write_sequence.svg" alt="Write Sequence" width="100%"/></p>
+</details>
 
----
+<details>
+<summary><b>Research Runtime Sequence</b></summary>
+<p align="center"><img src="assets/readme/mnemos_package_svgs/03_research_runtime_sequence.svg" alt="Research Sequence" width="100%"/></p>
+</details>
 
-### Performance Tuning Guide
+<details>
+<summary><b>Schema Relations</b></summary>
+<p align="center"><img src="assets/readme/mnemos_package_svgs/04_schema_relations.svg" alt="Schema Relations" width="100%"/></p>
+</details>
 
-### If latency is too high
+<details>
+<summary><b>Retrieval Scoring Engine</b></summary>
+<p align="center"><img src="assets/readme/mnemos_package_svgs/05_retrieval_scoring_engine.svg" alt="Scoring Engine" width="100%"/></p>
+</details>
 
-1. Reduce `max_iters`.
-2. Disable reranker or lower `rerank_top_n`.
-3. Disable HyDE if query expansion cost is high.
-4. Keep graph depth small in `GraphRetriever`.
-5. Lower retrieval `top_k`.
-
-### If answer quality is weak
-
-1. Keep HyDE enabled.
-2. Keep Self-RAG enabled to force evidence checks.
-3. Increase `max_iters` moderately.
-4. Enable reranker and tune `rerank_weight`.
-5. Improve ingestion chunking and metadata quality.
-
-### If memory grows too fast
-
-1. tighten `retention_threshold`
-2. enable stronger consolidation cadence
-3. reduce noise with better `NOOP` decision prompts
-4. tune promotion thresholds to avoid over-promotion
-
-### If stale facts leak into answers
-
-1. validate `t_valid` and `t_invalid` extraction quality
-2. verify temporal fields are attached in page metadata
-3. inspect `_filter_temporal_hits` behavior with fixture tests
-4. increase conflict resolution coverage
-
----
-
-### Known Gaps and Recommended Next Steps
-
-Current implementation is strong in architecture depth, but the following improvements would make it even more production-complete:
-
-1. Keep dependency manifests aligned (and consider adding a pinned lockfile for fully reproducible installs).
-2. Expand automated tests beyond TTL:
-   - memory op contracts
-   - retrieval fusion regression
-   - graph PPR behavior
-   - async checkpoint resume
-3. Add explicit benchmark harness scripts for repeatable public scorecards with pinned configs.
-4. Add migration tooling for schema evolution if memory files need backward compatibility over many versions.
-5. Add service wrappers (REST/gRPC) if this repo is to be consumed as a deployed backend, not only a library.
+<details>
+<summary><b>Graph Semantics CRUD</b></summary>
+<p align="center"><img src="assets/readme/mnemos_package_svgs/06_graph_semantics_crud.svg" alt="Graph CRUD" width="100%"/></p>
+</details>
 
 ---
 
-### FAQ
+## Additional Capabilities
 
-### Is MNEMOS only a graph memory system?
-
-No. Graph is one channel. The system is intentionally hybrid: dense + sparse + index + graph.
-
-### Does MNEMOS support append-only mode?
-
-You can emulate append-only behavior, but the system is designed for lifecycle edits because append-only memory decays in quality over time.
-
-### Why keep both memory store and page store?
-
-`MemoryEntry` is normalized memory state. `Page` is provenance-rich source context. Keeping both lets retrieval and auditing remain transparent.
-
-### Is Neo4j mandatory?
-
-No. If Neo4j environment variables are absent, graph features are skipped and non-graph retrieval channels still operate.
-
-### Is this OpenAI-only?
-
-No. Generation is OpenAI-compatible API based, with OpenRouter defaults and vLLM compatibility in the generator layer.
+| Capability | Module | Description |
+|:---|:---|:---|
+| **GDPR Erasure** | `mnemos.privacy` | `hard_delete_entry()` for Article 17 compliance + audit logging |
+| **MCP Server** | `mnemos.mcp` | Model Context Protocol for tool-use agents |
+| **Prometheus Metrics** | `mnemos.server.metrics` | Request latency, memory count, error rate |
+| **Streamlit Dashboard** | `dashboard/` | Real-time memory observability |
+| **LangChain Integration** | `mnemos.integrations` | Drop-in `MnemosLangchainMemory` adapter |
+| **Multi-Tenant** | `mnemos.cloud` | Tenant isolation for SaaS deployments |
+| **Image Memory** | `mnemos.modalities` | Visual content processing and storage |
+| **Experience Replay** | `mnemos.learning` | Replay buffer for reinforcement-style memory training |
+| **Hierarchical Summarization** | `mnemos.summarization` | Multi-level compression for long memory chains |
+| **User Profiling** | `mnemos.profile` | Adaptive user modeling with profile agent |
+| **Checkpointing** | `mnemos.utils` | Save/restore memory state snapshots |
 
 ---
 
-### Additional Documentation in This Repo
+## Research Foundations
 
-- `IMPLEMENTATION_DEEP_DIVE.md`
-- `IMPLEMENTATION_DEEP_DIVE_V2.md`
-- `LAUNCH_TEASERS.md`
-- `LAUNCH_POSTS.md`
-- `LINKEDIN_TRAILER_SERIES.md`
+MNEMOS draws from recent advances in agent memory systems:
 
----
-
-<a id="license"></a>
-## ðŸ“„ License
-
-MIT License. See `LICENSE`.
+- **MemTier** ([arXiv:2605.03675](https://arxiv.org/abs/2605.03675)) — Multi-signal retrieval fusion, tiered memory architecture, token-budget optimization
+- **Cognee** ([github](https://github.com/topoteretes/cognee)) — ECL (Extract, Cognify, Load) ingestion pattern
+- **Mem0** ([github](https://github.com/mem0ai/mem0)) — Developer experience patterns for memory APIs
+- **FSRS** — Free Spaced Repetition Scheduler for memory strength modeling
+- **Bi-temporal databases** — Temporal validity and point-in-time query semantics
 
 ---
 
-<a id="acknowledgments"></a>
-## ðŸ™ Acknowledgments
+## License
 
-Thanks to the open-source ecosystem that makes modern Python + LLM tooling possible.
+[MIT](LICENSE)
 
 ---
 
-<a id="support"></a>
-## ðŸ“ž Support
+## Acknowledgments
 
-- Repo: `github.com/DevChiniwala/MNEMOS`
-- Author: Dev Chiniwala (`github.com/DevChiniwala`)
-- Bugs/requests: open a GitHub issue with repro steps, logs, and your config (redact secrets)
+- Built on: [OpenAI API](https://platform.openai.com/), [Cohere](https://cohere.com/), [Neo4j](https://neo4j.com/), [FastAPI](https://fastapi.tiangolo.com/), [tiktoken](https://github.com/openai/tiktoken)
+- Research: MemTier, Cognee, Mem0
+- Originally forked from [JITMIND](https://github.com/DivyamTalwar/JITMIND), fully rebranded and extended with 6 phases of architectural improvements
+
+<div align="center">
+<br/>
+
+**MNEMOS** — Memory that edits itself, retrieves with precision, and improves over time.
+
+<br/>
+</div>
