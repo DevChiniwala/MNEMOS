@@ -2,14 +2,22 @@ import streamlit as st
 import pandas as pd
 import requests
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 # Configuration
 API_URL = "http://localhost:8000/v1"
+LOGO_PATH = Path(__file__).parent.parent / "assets" / "logo.png"
 
 st.set_page_config(page_title="MNEMOS Console", layout="wide", page_icon="🧠")
 
-st.title("🧠 MNEMOS Observability Console")
-st.markdown("Monitor and debug your AI agent's temporal memory.")
+# Header with logo
+col_logo, col_title = st.columns([1, 5])
+with col_logo:
+    if LOGO_PATH.exists():
+        st.image(str(LOGO_PATH), width=80)
+with col_title:
+    st.title("MNEMOS Observability Console")
+    st.markdown("Monitor and debug your AI agent's temporal memory.")
 
 def fetch_active_memories():
     try:

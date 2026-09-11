@@ -2,16 +2,13 @@
 
 <br/>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/final_svgs/01_system_overview.svg"/>
-  <img alt="MNEMOS System Overview" src="assets/readme/final_svgs/01_system_overview.svg" width="100%"/>
-</picture>
+<img src="assets/logo.png" alt="MNEMOS — Temporal Memory Infrastructure for Autonomous AI" width="420"/>
 
 <br/>
 
 # MNEMOS
 
-### Just-in-time memory system for AI agents
+### Temporal Memory Infrastructure for Autonomous AI
 
 Self-editing bi-temporal memory · hybrid 6-signal retrieval fusion · temporal graph reasoning
 Plan → Search → Integrate → Reflect loop for evidence-grounded answers

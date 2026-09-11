@@ -1,10 +1,20 @@
 import streamlit as st
+from pathlib import Path
 from mnemos.cloud.tenants import TenantManager, Tenant
 from mnemos.cloud.metering import usage_meter
 
+LOGO_PATH = Path(__file__).parent.parent / "assets" / "logo.png"
+
 st.set_page_config(page_title="MNEMOS Admin Console", layout="wide", page_icon="⚙️")
-st.title("⚙️ MNEMOS Admin Console")
-st.markdown("Manage tenants, workspaces, API keys, and usage.")
+
+# Header with logo
+col_logo, col_title = st.columns([1, 5])
+with col_logo:
+    if LOGO_PATH.exists():
+        st.image(str(LOGO_PATH), width=80)
+with col_title:
+    st.title("MNEMOS Admin Console")
+    st.markdown("Manage tenants, workspaces, API keys, and usage.")
 
 # Initialize in session state
 if "tenant_manager" not in st.session_state:

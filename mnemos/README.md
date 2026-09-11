@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="../assets/logo.png" alt="MNEMOS Logo" width="200"/>
+
 # MNEMOS Package Handbook
 
 ### Deep technical documentation for the Python package at `mnemos/`
