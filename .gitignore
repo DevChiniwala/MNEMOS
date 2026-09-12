@@ -102,4 +102,8 @@ node_modules/
 .yarn/
 .next/
 out/
+package.json
+package-lock.json
+build_carousel.js
+*.pptx
 
